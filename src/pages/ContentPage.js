@@ -1,7 +1,13 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { FaQuestionCircle, FaChalkboardTeacher, FaBookOpen, FaBookReader } from 'react-icons/fa';
+import { 
+  FaQuestionCircle, 
+  FaChalkboardTeacher, 
+  FaBookOpen, 
+  FaBookReader,
+  FaLink
+} from 'react-icons/fa';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -123,28 +129,40 @@ const ContentPage = () => {
       title: 'Questions',
       icon: <FaQuestionCircle />,
       description: 'Practice questions and quizzes to test your understanding',
-      count: '150+ Questions'
+      count: '150+ Questions',
+      type: 'questions'
     },
     {
       id: 'live-session',
       title: 'Live Session',
       icon: <FaChalkboardTeacher />,
       description: 'Join live classes and interact with teachers',
-      count: 'Next session: Today 2:00 PM'
+      count: 'Next session: Today 2:00 PM',
+      type: 'live-session'
     },
     {
       id: 'reference',
       title: 'Reference Materials',
       icon: <FaBookOpen />,
       description: 'Additional study materials and resources',
-      count: '25+ Resources'
+      count: '25+ Resources',
+      type: 'reference'
     },
     {
       id: 'lessons',
       title: 'Lessons',
       icon: <FaBookReader />,
       description: 'Comprehensive video and text lessons',
-      count: '12 Lessons'
+      count: '12 Lessons',
+      type: 'lessons'
+    },
+    {
+      id: 'external-resources',
+      title: 'External Resources',
+      icon: <FaLink />,
+      description: 'Links to useful external resources and websites',
+      count: 'Manage links',
+      type: 'external-resources'
     }
   ];
 
@@ -163,7 +181,7 @@ const ContentPage = () => {
         {contentItems.map((item) => (
           <ContentCard 
             key={item.id}
-            onClick={() => {}}
+            onClick={() => navigate(`/content/${grade}/${subject}/${item.type}`)}
             aria-label={`${item.title} for ${subjectName}`}
           >
             <CardIcon>
