@@ -154,50 +154,8 @@ const LandingPage = () => {
     {
       id: 'undergraduate',
       title: 'Undergraduate',
-      description: 'University Level',
-      icon: '🎓',
-      grades: [
-        { 
-          id: 'year1', 
-          name: 'First Year',
-          subjects: [
-            { id: 'mathematics', name: 'Mathematics' },
-            { id: 'physics', name: 'Physics' },
-            { id: 'it', name: 'Information Technology' },
-            { id: 'language-arts', name: 'Language Arts' }
-          ]
-        },
-        { 
-          id: 'year2', 
-          name: 'Second Year',
-          subjects: [
-            { id: 'mathematics', name: 'Advanced Mathematics' },
-            { id: 'physics', name: 'Physics' },
-            { id: 'it', name: 'Information Technology' },
-            { id: 'language-arts', name: 'Language Arts' }
-          ]
-        },
-        { 
-          id: 'year3', 
-          name: 'Third Year',
-          subjects: [
-            { id: 'mathematics', name: 'Applied Mathematics' },
-            { id: 'physics', name: 'Advanced Physics' },
-            { id: 'it', name: 'Information Systems' },
-            { id: 'language-arts', name: 'Advanced Language Arts' }
-          ]
-        },
-        { 
-          id: 'year4', 
-          name: 'Fourth Year',
-          subjects: [
-            { id: 'mathematics', name: 'Specialized Mathematics' },
-            { id: 'physics', name: 'Physics Research' },
-            { id: 'it', name: 'IT Project Management' },
-            { id: 'language-arts', name: 'Professional Writing' }
-          ]
-        },
-      ]
+      description: 'University Level Resources',
+      icon: '🎓'
     },
     {
       id: 'standardized-tests',
@@ -213,6 +171,11 @@ const LandingPage = () => {
   ];
 
   const handleLevelSelect = (level) => {
+    // For undergraduate, redirect to department selection
+    if (level.id === 'undergraduate') {
+      navigate('/undergraduate');
+      return;
+    }
     // For standardized tests, show the test selection
     if (level.id === 'standardized-tests') {
       setSelectedLevel(level);

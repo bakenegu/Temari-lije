@@ -9,6 +9,7 @@ import ResourceList from './pages/ResourceList';
 import LoginPage from './pages/LoginPage';
 import AdminAddResource from './pages/admin/AdminAddResource';
 import ProtectedRoute from './components/ProtectedRoute';
+import DepartmentSelection from './pages/undergraduate/DepartmentSelection';
 import styled from '@emotion/styled';
 import './App.css';
 
@@ -40,6 +41,9 @@ const AppContent = () => {
             path="/content/:grade/:subject/:resourceType" 
             element={<ResourceList />} 
           />
+          <Route path="/undergraduate" element={<DepartmentSelection />} />
+          <Route path="/undergraduate/:departmentId/resources" element={<ResourceList isUndergraduate={true} />} />
+          <Route path="/undergraduate/:departmentId/resources/:resourceType" element={<ResourceList isUndergraduate={true} />} />
           <Route 
             path="/admin/add-resource/:grade/:subject/:resourceType" 
             element={
