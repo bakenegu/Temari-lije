@@ -231,7 +231,7 @@ const Header = () => {
       <HeaderContent>
         <Logo to="/">
           <LogoImage src="/tl-logo.png" alt="Logo" />
-          <LogoText>Temari Learning</LogoText>
+          <LogoText>TemariLije</LogoText>
         </Logo>
         <Navigation>
           <Link to="/">Home</Link>

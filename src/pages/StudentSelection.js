@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { FaBook, FaFlask, FaLaptopCode, FaCalculator } from 'react-icons/fa';
+import { FaBook, FaFlask, FaLaptopCode, FaCalculator, FaAtom, FaBookOpen } from 'react-icons/fa';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -112,6 +112,12 @@ const StudentSelection = () => {
       description: 'Algebra, Geometry, Calculus and more'
     },
     {
+      id: 'physics',
+      name: 'Physics',
+      icon: <FaAtom />,
+      description: 'Mechanics, Thermodynamics, and more'
+    },
+    {
       id: 'biology',
       name: 'Biology',
       icon: <FaBook />,
@@ -128,6 +134,12 @@ const StudentSelection = () => {
       name: 'Information Technology',
       icon: <FaLaptopCode />,
       description: 'Computing and digital technologies'
+    },
+    {
+      id: 'language-arts',
+      name: 'Language Arts',
+      icon: <FaBookOpen />,
+      description: 'Reading, writing, and literature'
     }
   ];
 
