@@ -413,8 +413,16 @@ const ResourceList = ({ isUndergraduate = false }) => {
           {undergraduateResources.map((resource) => (
             <ResourceCard 
               key={resource.id}
-              onClick={() => navigate(`/undergraduate/${departmentId}/resources/${resource.id}`)}
+              as="div"
+              onClick={() => {
+                if (resource.url) {
+                  window.open(resource.url, '_blank', 'noopener,noreferrer');
+                } else {
+                  navigate(`/undergraduate/${departmentId}/resources/${resource.id}`);
+                }
+              }}
               aria-label={`${resource.title} for ${departmentId || 'undergraduate'}`}
+              style={{ cursor: 'pointer' }}
             >
               <ResourceIcon>{resource.icon}</ResourceIcon>
               <ResourceContent>
@@ -431,7 +439,14 @@ const ResourceList = ({ isUndergraduate = false }) => {
             <ResourceCard 
               key={resource.id}
               as="div"
-              onClick={() => window.open(resource.url, '_blank', 'noopener,noreferrer')}
+              onClick={() => {
+                if (resource.url) {
+                  window.open(resource.url, '_blank', 'noopener,noreferrer');
+                } else if (isUndergraduate) {
+                  navigate(`/undergraduate/${departmentId}/resources/${resource.id}`);
+                }
+              }}
+              style={{ cursor: 'pointer' }}
             >
               <ResourceIcon>
                 <FaExternalLinkAlt />
