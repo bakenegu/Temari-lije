@@ -6,7 +6,8 @@ import {
   FaChalkboardTeacher, 
   FaBookOpen, 
   FaBookReader,
-  FaLink
+  FaLink,
+  FaChevronLeft
 } from 'react-icons/fa';
 
 const Container = styled.div`
@@ -113,15 +114,29 @@ const CardFooter = styled.div`
 `;
 
 const ContentPage = () => {
-  const { grade, subject } = useParams();
+  const { levelId, grade, subject } = useParams();
   const navigate = useNavigate();
 
-  const subjectName = {
-    'maths': 'Mathematics',
-    'biology': 'Biology',
-    'chemistry': 'Chemistry',
-    'it': 'Information Technology'
-  }[subject] || subject;
+  // Format subject for display
+  const formatSubject = (subj) => {
+    const subjectMap = {
+      'maths': 'Mathematics',
+      'science': 'Science',
+      'english': 'English',
+      'ict': 'ICT',
+      'calculus': 'Calculus',
+      'physics': 'Physics'
+    };
+    return subjectMap[subj] || subj;
+  };
+
+  const handleBack = () => {
+    navigate(`/levels/${levelId}/grades`);
+  };
+  
+  const handleResourceSelect = (resourceType) => {
+    navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
+  };
 
   const contentItems = [
     {
@@ -168,21 +183,25 @@ const ContentPage = () => {
 
   return (
     <Container>
-      <BackButton onClick={() => navigate(-1)}>
-        ← Back to Subjects
+      <BackButton onClick={handleBack}>
+        <FaChevronLeft /> Back to Subjects
       </BackButton>
       
       <PageHeader>
-        <SubjectTitle>{subjectName}</SubjectTitle>
-        <GradeInfo>Grade {grade} • {subjectName}</GradeInfo>
+        <SubjectTitle>{formatSubject(subject)}</SubjectTitle>
+        <GradeInfo>
+          {levelId === 'college' 
+            ? `${grade.charAt(0).toUpperCase() + grade.slice(1)} Year` 
+            : `Grade ${grade}`} • Select a resource type to continue
+        </GradeInfo>
       </PageHeader>
       
       <ContentGrid>
         {contentItems.map((item) => (
           <ContentCard 
             key={item.id}
-            onClick={() => navigate(`/content/${grade}/${subject}/${item.type}`)}
-            aria-label={`${item.title} for ${subjectName}`}
+            onClick={() => handleResourceSelect(item.type)}
+            aria-label={`${item.title} for ${formatSubject(subject)}`}
           >
             <CardIcon>
               {item.icon}

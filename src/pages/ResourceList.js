@@ -235,9 +235,18 @@ const formatSubjectName = (subject) => {
 };
 
 // Resource List Component
-const ResourceList = () => {
-  const { grade, subject, resourceType } = useParams();
+const ResourceList = ({ isExam = false }) => {
+  const { levelId, grade, subject, resourceType, examId } = useParams();
   const navigate = useNavigate();
+  
+  const handleBack = () => {
+    if (isExam) {
+      navigate(`/resource-categories/${examId}`);
+    } else {
+      navigate(`/content/${levelId}/${grade}/${subject}`);
+    }
+  };
+  
   const { user } = useAuth();
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -246,7 +255,11 @@ const ResourceList = () => {
   useEffect(() => {
     setIsLoading(true);
     try {
-      const savedResources = localStorage.getItem(`resources_${grade}_${subject}_${resourceType}`);
+      const storageKey = isExam 
+        ? `exam_resources_${examId}_${resourceType}`
+        : `resources_${levelId}_${grade}_${subject}_${resourceType}`;
+        
+      const savedResources = localStorage.getItem(storageKey);
       if (savedResources) {
         setResources(JSON.parse(savedResources));
       } else {
@@ -258,15 +271,22 @@ const ResourceList = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [grade, subject, resourceType]);
+  }, [isExam, levelId, grade, subject, resourceType, examId]);
 
   const handleDeleteResource = (id) => {
-    const updatedResources = resources.filter(resource => resource.id !== id);
-    setResources(updatedResources);
-    localStorage.setItem(
-      `resources_${grade}_${subject}_${resourceType}`,
-      JSON.stringify(updatedResources)
-    );
+    if (window.confirm('Are you sure you want to delete this resource?')) {
+      const updatedResources = resources.filter(resource => resource.id !== id);
+      setResources(updatedResources);
+      
+      const storageKey = isExam
+        ? `exam_resources_${examId}_${resourceType}`
+        : `resources_${levelId}_${grade}_${subject}_${resourceType}`;
+        
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify(updatedResources)
+      );
+    }
   };
 
   if (isLoading) {
@@ -283,15 +303,21 @@ const ResourceList = () => {
     <Container>
       <Header>
         <div>
-          <BackButton onClick={() => navigate(-1)}>
+          <BackButton onClick={handleBack}>
             <FaArrowLeft /> Back
           </BackButton>
           <Title>{formatResourceType(resourceType)} Resources</Title>
-          <p>Grade {grade} • {formatSubjectName(subject)}</p>
+          <p>
+            {isExam 
+              ? `${examId.toUpperCase()} Exam`
+              : levelId === 'college' 
+                ? `${grade.charAt(0).toUpperCase() + grade.slice(1)} Year` 
+                : `Grade ${grade} • ${formatSubjectName(subject)}`}
+          </p>
         </div>
         
         {user?.role === 'admin' && (
-          <AddButton to={`/admin/add-resource/${grade}/${subject}/${resourceType}`}>
+          <AddButton to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}>
             <FaPlus /> Add Resource
           </AddButton>
         )}

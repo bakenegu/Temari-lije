@@ -2,6 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
+import EducationLevelPage from './pages/EducationLevelPage';
+import ExamsPage from './pages/ExamsPage';
+import ResourceCategoriesPage from './pages/ResourceCategoriesPage';
 import LandingPage from './pages/LandingPage';
 import StudentSelection from './pages/StudentSelection';
 import ContentPage from './pages/ContentPage';
@@ -32,16 +35,26 @@ const AppContent = () => {
       <Header />
       <MainContent>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<EducationLevelPage />} />
+          <Route path="/exams" element={<ExamsPage />} />
+          <Route path="/resource-categories/:examId" element={<ResourceCategoriesPage />} />
+          <Route path="/levels/:levelId/grades" element={<LandingPage />} />
           <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-          <Route path="/students/:grade" element={<StudentSelection />} />
-          <Route path="/content/:grade/:subject" element={<ContentPage />} />
+          
+          {/* Updated routes to include levelId */}
+          <Route path="/students/:levelId/:grade" element={<StudentSelection />} />
+          <Route path="/content/:levelId/:grade/:subject" element={<ContentPage />} />
           <Route 
-            path="/content/:grade/:subject/:resourceType" 
+            path="/content/:levelId/:grade/:subject/:resourceType" 
             element={<ResourceList />} 
           />
+          {/* New route for exam resources */}
           <Route 
-            path="/admin/add-resource/:grade/:subject/:resourceType" 
+            path="/content/exams/:examId/:resourceType"
+            element={<ResourceList isExam={true} />}
+          />
+          <Route 
+            path="/admin/add-resource/:levelId/:grade/:subject/:resourceType" 
             element={
               <ProtectedRoute>
                 <AdminAddResource />

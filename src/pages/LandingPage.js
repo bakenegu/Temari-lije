@@ -1,11 +1,38 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from '@emotion/styled';
+import { FaChevronLeft } from 'react-icons/fa';
 
 const Container = styled.div`
   min-height: 100vh;
   padding: 2rem;
   background-color: #f5f7fa;
+  position: relative;
+`;
+
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  color: #4299e1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+  
+  svg {
+    transition: transform 0.2s;
+  }
+  
+  &:hover svg {
+    transform: translateX(-3px);
+  }
 `;
 
 const Header = styled.header`
@@ -77,35 +104,85 @@ const GradeLabel = styled.p`
   margin: 0.5rem 0 0;
 `;
 
+const GradeLevels = {
+  elementary: {
+    title: 'Elementary School',
+    grades: [1, 2, 3, 4, 5, 6],
+    description: 'Select your grade'
+  },
+  middle: {
+    title: 'Middle School',
+    grades: [7, 8],
+    description: 'Select your grade'
+  },
+  high: {
+    title: 'High School',
+    grades: [9, 10, 11, 12],
+    description: 'Select your grade'
+  },
+  college: {
+    title: 'College',
+    grades: [
+      { id: 'freshman', label: 'Freshman' },
+      { id: 'sophomore', label: 'Sophomore' },
+      { id: 'junior', label: 'Junior' },
+      { id: 'senior', label: 'Senior' }
+    ],
+    description: 'Select your year'
+  }
+};
+
 const LandingPage = () => {
   const navigate = useNavigate();
-  const grades = [9, 10, 11, 12];
+  const { levelId } = useParams();
+  
+  // Get the current level or default to high school if not found
+  const currentLevel = GradeLevels[levelId] || GradeLevels.high;
+  const isCollege = levelId === 'college';
 
   const handleGradeSelect = (grade) => {
-    navigate(`/students/${grade}`);
+    if (isCollege) {
+      navigate(`/students/${levelId}/${grade.id}`);
+    } else {
+      navigate(`/students/${levelId}/${grade}`);
+    }
+  };
+
+  const handleBack = () => {
+    navigate('/');
   };
 
   return (
     <Container>
+      <BackButton onClick={handleBack}>
+        <FaChevronLeft /> Back to Education Levels
+      </BackButton>
+      
       <Header>
-        <Title>EduLearn Platform</Title>
-        <Subtitle>Select your grade to get started</Subtitle>
+        <Title>{currentLevel.title}</Title>
+        <Subtitle>{currentLevel.description}</Subtitle>
       </Header>
       
       <GradeGrid>
-        {grades.map((grade) => (
-          <GradeCard 
-            key={grade} 
-            onClick={() => handleGradeSelect(grade)}
-            aria-label={`Grade ${grade}`}
-          >
-            <CardImage />
-            <CardContent>
-              <GradeNumber>{grade}</GradeNumber>
-              <GradeLabel>Grade {grade}</GradeLabel>
-            </CardContent>
-          </GradeCard>
-        ))}
+        {currentLevel.grades.map((grade) => {
+          const gradeValue = isCollege ? grade.id : grade;
+          const displayLabel = isCollege ? grade.label : `Grade ${grade}`;
+          const displayNumber = isCollege ? grade.label : `Grade ${grade}`;
+          
+          return (
+            <GradeCard 
+              key={gradeValue} 
+              onClick={() => handleGradeSelect(gradeValue)}
+              aria-label={displayLabel}
+            >
+              <CardImage />
+              <CardContent>
+                <GradeNumber>{displayNumber}</GradeNumber>
+                <GradeLabel>{currentLevel.title}</GradeLabel>
+              </CardContent>
+            </GradeCard>
+          );
+        })}
       </GradeGrid>
     </Container>
   );

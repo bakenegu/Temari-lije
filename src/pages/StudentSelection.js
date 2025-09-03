@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { FaBook, FaFlask, FaLaptopCode, FaCalculator } from 'react-icons/fa';
+import { FaBook, FaFlask, FaLaptopCode, FaCalculator, FaChevronLeft, FaGlobeAmericas, FaLandmark, FaLanguage } from 'react-icons/fa';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -101,48 +101,111 @@ const BackButton = styled.button`
 `;
 
 const StudentSelection = () => {
-  const params = useParams();
+  const { levelId, grade } = useParams();
   const navigate = useNavigate();
 
-  const subjects = [
-    {
-      id: 'maths',
-      name: 'Mathematics',
-      icon: <FaCalculator />,
-      description: 'Algebra, Geometry, Calculus and more'
-    },
-    {
-      id: 'biology',
-      name: 'Biology',
-      icon: <FaBook />,
-      description: 'Life sciences and living organisms'
-    },
-    {
-      id: 'chemistry',
-      name: 'Chemistry',
-      icon: <FaFlask />,
-      description: 'Elements, compounds, and reactions'
-    },
-    {
-      id: 'it',
-      name: 'Information Technology',
-      icon: <FaLaptopCode />,
-      description: 'Computing and digital technologies'
-    }
-  ];
+  // Define subjects based on education level
+  const getSubjects = () => {
+    const commonSubjects = [
+      {
+        id: 'maths',
+        title: 'Mathematics',
+        icon: <FaCalculator />,
+        description: 'Explore mathematical concepts and problem-solving skills.'
+      },
+      {
+        id: 'science',
+        title: 'Science',
+        icon: <FaFlask />,
+        description: 'Discover the wonders of the natural world.'
+      },
+      {
+        id: 'english',
+        title: 'English',
+        icon: <FaBook />,
+        description: 'Improve your language and literature skills.'
+      },
+      {
+        id: 'language-arts',
+        title: 'Language Arts',
+        icon: <FaLanguage />,
+        description: 'Enhance reading, writing, and communication skills.'
+      },
+      {
+        id: 'social-studies',
+        title: 'Social Studies',
+        icon: <FaLandmark />,
+        description: 'Explore history, culture, and society.'
+      },
+      {
+        id: 'geography',
+        title: 'Geography',
+        icon: <FaGlobeAmericas />,
+        description: 'Study the Earth\'s landscapes and environments.'
+      },
+      {
+        id: 'ict',
+        title: 'ICT',
+        icon: <FaLaptopCode />,
+        description: 'Learn about information and communication technology.'
+      }
+    ];
 
-  const handleSubjectClick = (subjectId) => {
-    navigate(`/content/${params.grade}/${subjectId}`);
+    // Add or modify subjects based on education level
+    switch(levelId) {
+      case 'elementary':
+        return commonSubjects.filter(subject => 
+          ['maths', 'science', 'english', 'language-arts', 'social-studies'].includes(subject.id)
+        );
+      case 'middle':
+        return commonSubjects.filter(subject => 
+          subject.id !== 'calculus' && subject.id !== 'physics'
+        );
+      case 'high':
+        return commonSubjects;
+      case 'college':
+        return [
+          ...commonSubjects,
+          {
+            id: 'calculus',
+            title: 'Calculus',
+            icon: <FaCalculator />,
+            description: 'Advanced mathematical concepts and applications.'
+          },
+          {
+            id: 'physics',
+            title: 'Physics',
+            icon: <FaFlask />,
+            description: 'Study of matter, motion, and energy.'
+          }
+        ];
+      default:
+        return commonSubjects;
+    }
+  };
+
+  const subjects = getSubjects();
+
+  const handleSubjectSelect = (subject) => {
+    navigate(`/content/${levelId}/${grade}/${subject}`);
+  };
+
+  const handleBack = () => {
+    navigate(`/levels/${levelId}/grades`);
   };
 
   return (
     <Container>
-      <BackButton onClick={() => navigate(-1)}>
-        ← Back to Grades
+      <BackButton onClick={handleBack}>
+        <FaChevronLeft /> Back to Grades
       </BackButton>
       
       <Header>
-        <GradeTitle>Grade {params.grade} Subjects</GradeTitle>
+        <GradeTitle>
+          {levelId === 'college' 
+            ? `${grade.charAt(0).toUpperCase() + grade.slice(1)} Year` 
+            : `Grade ${grade}`} Subjects
+        </GradeTitle>
         <p>Select a subject to view available materials</p>
       </Header>
       
@@ -150,14 +213,16 @@ const StudentSelection = () => {
         {subjects.map((subject) => (
           <SubjectCard 
             key={subject.id}
-            onClick={() => handleSubjectClick(subject.id)}
-            aria-label={`${subject.name} for Grade ${params.grade}`}
+            onClick={() => handleSubjectSelect(subject.id)}
+            aria-label={`${subject.title} for Grade ${grade}`}
           >
             <SubjectIcon>
-              {subject.icon}
+              {React.cloneElement(subject.icon, { 
+                size: levelId === 'elementary' ? 32 : 24 
+              })}
             </SubjectIcon>
             <SubjectContent>
-              <SubjectTitle>{subject.name}</SubjectTitle>
+              <SubjectTitle>{subject.title}</SubjectTitle>
               <SubjectDescription>{subject.description}</SubjectDescription>
             </SubjectContent>
           </SubjectCard>

@@ -151,12 +151,25 @@ const SaveButton = styled.button`
 `;
 
 const AdminAddResource = () => {
-  const { grade, subject, resourceType } = useParams();
+  const { levelId, grade, subject, resourceType } = useParams();
   const navigate = useNavigate();
   const [resources, setResources] = useState([{ title: '', url: '' }]);
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  // Format subject for display
+  const formatSubject = (subj) => {
+    const subjectMap = {
+      'maths': 'Mathematics',
+      'science': 'Science',
+      'english': 'English',
+      'ict': 'ICT',
+      'calculus': 'Calculus',
+      'physics': 'Physics'
+    };
+    return subjectMap[subj] || subj;
+  };
 
   // Format resource type for display
   const formatResourceType = (type) => {
@@ -169,15 +182,17 @@ const AdminAddResource = () => {
 
   // Load existing resources
   useEffect(() => {
-    if (grade && subject && resourceType) {
-      const savedResources = localStorage.getItem(`resources_${grade}_${subject}_${resourceType}`);
+    if (levelId && grade && subject && resourceType) {
+      const savedResources = localStorage.getItem(
+        `resources_${levelId}_${grade}_${subject}_${resourceType}`
+      );
       if (savedResources) {
         setResources(JSON.parse(savedResources));
       } else {
         setResources([{ title: '', url: '' }]);
       }
     }
-  }, [grade, subject, resourceType]);
+  }, [levelId, grade, subject, resourceType]);
 
   const handleAddResource = () => {
     setResources([...resources, { title: '', url: '' }]);
@@ -212,32 +227,41 @@ const AdminAddResource = () => {
     setIsSaving(true);
 
     try {
-      // Save to localStorage
+      // Save to localStorage with education level
       localStorage.setItem(
-        `resources_${grade}_${subject}_${resourceType}`,
+        `resources_${levelId}_${grade}_${subject}_${resourceType}`,
         JSON.stringify(resources.filter(r => r.title.trim() && r.url.trim()))
       );
+      
       setSuccess('Resources saved successfully!');
       setTimeout(() => {
-        navigate(-1); // Go back to previous page
+        navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
       }, 1500);
     } catch (err) {
-      setError('Failed to save resources. Please try again.');
       console.error('Error saving resources:', err);
+      setError('Failed to save resources. Please try again.');
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleBack = () => {
+    navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
   };
 
   return (
     <Container>
       <Header>
         <div>
-          <BackButton onClick={() => navigate(-1)}>
+          <BackButton onClick={handleBack}>
             <FaArrowLeft /> Back
           </BackButton>
-          <Title>Manage Resources</Title>
-          <p>Grade {grade} • {subject} • {formatResourceType(resourceType)}</p>
+          <Title>Manage {formatResourceType(resourceType)} Resources</Title>
+          <p>
+            {levelId === 'college' 
+              ? `${grade.charAt(0).toUpperCase() + grade.slice(1)} Year` 
+              : `Grade ${grade}`} • {formatSubject(subject)}
+          </p>
         </div>
       </Header>
 
