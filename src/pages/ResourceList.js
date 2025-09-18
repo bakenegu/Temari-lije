@@ -9,6 +9,7 @@ import {
   FaPlusCircle 
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { listResources, deleteResource as apiDeleteResource } from '../api/resourcesApi';
 
 // Styled components
 const Container = styled.div`
@@ -251,41 +252,42 @@ const ResourceList = ({ isExam = false }) => {
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load resources from localStorage on component mount
+  // Load resources from backend API on component mount
   useEffect(() => {
+    let isMounted = true;
     setIsLoading(true);
-    try {
-      const storageKey = isExam 
-        ? `exam_resources_${examId}_${resourceType}`
-        : `resources_${levelId}_${grade}_${subject}_${resourceType}`;
-        
-      const savedResources = localStorage.getItem(storageKey);
-      if (savedResources) {
-        setResources(JSON.parse(savedResources));
-      } else {
-        setResources([]);
+    (async () => {
+      try {
+        const data = await listResources({
+          isExam,
+          examId,
+          levelId,
+          grade,
+          subject,
+          resourceType,
+        });
+        if (isMounted) setResources(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error loading resources:', error);
+        if (isMounted) setResources([]);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading resources:', error);
-      setResources([]);
-    } finally {
-      setIsLoading(false);
-    }
+    })();
+    return () => { isMounted = false; };
   }, [isExam, levelId, grade, subject, resourceType, examId]);
 
-  const handleDeleteResource = (id) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
-      const updatedResources = resources.filter(resource => resource.id !== id);
-      setResources(updatedResources);
-      
-      const storageKey = isExam
-        ? `exam_resources_${examId}_${resourceType}`
-        : `resources_${levelId}_${grade}_${subject}_${resourceType}`;
-        
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify(updatedResources)
-      );
+  const handleDeleteResource = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this resource?')) return;
+    // Optimistic update
+    const prev = resources;
+    setResources(resources.filter(r => r.id !== id));
+    try {
+      await apiDeleteResource({ isExam, examId, levelId, grade, subject, resourceType }, id);
+    } catch (e) {
+      console.error('Delete failed, reverting:', e);
+      setResources(prev);
+      alert('Failed to delete resource. Please try again.');
     }
   };
 
@@ -316,7 +318,7 @@ const ResourceList = ({ isExam = false }) => {
           </p>
         </div>
         
-        {user?.role === 'admin' && (
+        {user?.role === 'admin' && !isExam && (
           <AddButton to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}>
             <FaPlus /> Add Resource
           </AddButton>
@@ -383,9 +385,9 @@ const ResourceList = ({ isExam = false }) => {
           <FaPlusCircle size={32} style={{ marginBottom: '1rem', color: '#a0aec0' }} />
           <h3>No resources available</h3>
           <p>There are no resources added for this section yet.</p>
-          {user?.role === 'admin' && (
+          {user?.role === 'admin' && !isExam && (
             <AddButton 
-              to={`/admin/add-resource/${grade}/${subject}/${resourceType}`}
+              to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}
               style={{ marginTop: '1rem', display: 'inline-flex' }}
             >
               <FaPlus /> Add Your First Resource

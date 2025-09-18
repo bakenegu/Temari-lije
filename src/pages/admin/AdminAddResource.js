@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { FaArrowLeft, FaSave, FaPlus, FaTrash } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
+import { listResources, saveResources } from '../../api/resourcesApi';
 
 const Container = styled.div`
   max-width: 1000px;
@@ -180,18 +180,29 @@ const AdminAddResource = () => {
       .join(' ');
   };
 
-  // Load existing resources
+  // Load existing resources from backend
   useEffect(() => {
-    if (levelId && grade && subject && resourceType) {
-      const savedResources = localStorage.getItem(
-        `resources_${levelId}_${grade}_${subject}_${resourceType}`
-      );
-      if (savedResources) {
-        setResources(JSON.parse(savedResources));
-      } else {
-        setResources([{ title: '', url: '' }]);
+    let isMounted = true;
+    (async () => {
+      if (levelId && grade && subject && resourceType) {
+        try {
+          const data = await listResources({
+            isExam: false,
+            levelId,
+            grade,
+            subject,
+            resourceType,
+          });
+          if (isMounted) {
+            setResources(Array.isArray(data) && data.length > 0 ? data : [{ title: '', url: '' }]);
+          }
+        } catch (e) {
+          console.error('Failed to load resources:', e);
+          if (isMounted) setResources([{ title: '', url: '' }]);
+        }
       }
-    }
+    })();
+    return () => { isMounted = false; };
   }, [levelId, grade, subject, resourceType]);
 
   const handleAddResource = () => {
@@ -212,7 +223,7 @@ const AdminAddResource = () => {
     setResources(newResources);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -227,16 +238,18 @@ const AdminAddResource = () => {
     setIsSaving(true);
 
     try {
-      // Save to localStorage with education level
-      localStorage.setItem(
-        `resources_${levelId}_${grade}_${subject}_${resourceType}`,
-        JSON.stringify(resources.filter(r => r.title.trim() && r.url.trim()))
-      );
-      
+      const payload = resources.filter(r => r.title.trim() && r.url.trim());
+      await saveResources({
+        isExam: false,
+        levelId,
+        grade,
+        subject,
+        resourceType,
+      }, payload);
       setSuccess('Resources saved successfully!');
       setTimeout(() => {
         navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
-      }, 1500);
+      }, 1200);
     } catch (err) {
       console.error('Error saving resources:', err);
       setError('Failed to save resources. Please try again.');
