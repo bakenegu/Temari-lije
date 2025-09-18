@@ -53,6 +53,15 @@ const AppContent = () => {
             path="/content/exams/:examId/:resourceType"
             element={<ResourceList isExam={true} />}
           />
+          {/* Admin manage page for exam resources */}
+          <Route 
+            path="/admin/add-resource/exams/:examId/:resourceType"
+            element={
+              <ProtectedRoute>
+                <AdminAddResource />
+              </ProtectedRoute>
+            }
+          />
           <Route 
             path="/admin/add-resource/:levelId/:grade/:subject/:resourceType" 
             element={

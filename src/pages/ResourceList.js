@@ -318,10 +318,16 @@ const ResourceList = ({ isExam = false }) => {
           </p>
         </div>
         
-        {user?.role === 'admin' && !isExam && (
-          <AddButton to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}>
-            <FaPlus /> Add Resource
-          </AddButton>
+        {user?.role === 'admin' && (
+          isExam ? (
+            <AddButton to={`/admin/add-resource/exams/${examId}/${resourceType}`}>
+              <FaPlus /> Add Resource
+            </AddButton>
+          ) : (
+            <AddButton to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}>
+              <FaPlus /> Add Resource
+            </AddButton>
+          )
         )}
       </Header>
 
@@ -385,13 +391,22 @@ const ResourceList = ({ isExam = false }) => {
           <FaPlusCircle size={32} style={{ marginBottom: '1rem', color: '#a0aec0' }} />
           <h3>No resources available</h3>
           <p>There are no resources added for this section yet.</p>
-          {user?.role === 'admin' && !isExam && (
-            <AddButton 
-              to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}
-              style={{ marginTop: '1rem', display: 'inline-flex' }}
-            >
-              <FaPlus /> Add Your First Resource
-            </AddButton>
+          {user?.role === 'admin' && (
+            isExam ? (
+              <AddButton 
+                to={`/admin/add-resource/exams/${examId}/${resourceType}`}
+                style={{ marginTop: '1rem', display: 'inline-flex' }}
+              >
+                <FaPlus /> Add Your First Resource
+              </AddButton>
+            ) : (
+              <AddButton 
+                to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}
+                style={{ marginTop: '1rem', display: 'inline-flex' }}
+              >
+                <FaPlus /> Add Your First Resource
+              </AddButton>
+            )
           )}
         </div>
       )}

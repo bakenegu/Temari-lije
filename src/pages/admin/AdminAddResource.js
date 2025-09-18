@@ -151,7 +151,8 @@ const SaveButton = styled.button`
 `;
 
 const AdminAddResource = () => {
-  const { levelId, grade, subject, resourceType } = useParams();
+  const { levelId, grade, subject, resourceType, examId } = useParams();
+  const isExam = !!examId;
   const navigate = useNavigate();
   const [resources, setResources] = useState([{ title: '', url: '' }]);
   const [isSaving, setIsSaving] = useState(false);
@@ -180,14 +181,17 @@ const AdminAddResource = () => {
       .join(' ');
   };
 
+  const examName = examId === 'sat' ? 'SAT' : examId === 'gre' ? 'GRE' : (examId ? examId.toUpperCase() : '');
+
   // Load existing resources from backend
   useEffect(() => {
     let isMounted = true;
     (async () => {
-      if (levelId && grade && subject && resourceType) {
+      if ((isExam && examId && resourceType) || (!isExam && levelId && grade && subject && resourceType)) {
         try {
           const data = await listResources({
-            isExam: false,
+            isExam,
+            examId,
             levelId,
             grade,
             subject,
@@ -203,7 +207,7 @@ const AdminAddResource = () => {
       }
     })();
     return () => { isMounted = false; };
-  }, [levelId, grade, subject, resourceType]);
+  }, [isExam, examId, levelId, grade, subject, resourceType]);
 
   const handleAddResource = () => {
     setResources([...resources, { title: '', url: '' }]);
@@ -240,7 +244,8 @@ const AdminAddResource = () => {
     try {
       const payload = resources.filter(r => r.title.trim() && r.url.trim());
       await saveResources({
-        isExam: false,
+        isExam,
+        examId,
         levelId,
         grade,
         subject,
@@ -248,7 +253,11 @@ const AdminAddResource = () => {
       }, payload);
       setSuccess('Resources saved successfully!');
       setTimeout(() => {
-        navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
+        if (isExam) {
+          navigate(`/content/exams/${examId}/${resourceType}`);
+        } else {
+          navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
+        }
       }, 1200);
     } catch (err) {
       console.error('Error saving resources:', err);
@@ -259,7 +268,11 @@ const AdminAddResource = () => {
   };
 
   const handleBack = () => {
-    navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
+    if (isExam) {
+      navigate(`/content/exams/${examId}/${resourceType}`);
+    } else {
+      navigate(`/content/${levelId}/${grade}/${subject}/${resourceType}`);
+    }
   };
 
   return (
@@ -271,9 +284,11 @@ const AdminAddResource = () => {
           </BackButton>
           <Title>Manage {formatResourceType(resourceType)} Resources</Title>
           <p>
-            {levelId === 'college' 
-              ? `${grade.charAt(0).toUpperCase() + grade.slice(1)} Year` 
-              : `Grade ${grade}`} • {formatSubject(subject)}
+            {isExam 
+              ? `${examName} Exam`
+              : (levelId === 'college' 
+                  ? `${grade.charAt(0).toUpperCase() + grade.slice(1)} Year` 
+                  : `Grade ${grade}`) + ` • ${formatSubject(subject)}`}
           </p>
         </div>
       </Header>
