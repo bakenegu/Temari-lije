@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt } from 'react-icons/fa';
 
 // Styled components
 const HeaderContainer = styled.header`
@@ -164,39 +164,9 @@ const DropdownItem = styled(Link)`
   }
 `;
 
-const LoginButton = styled(Link)`
-  background: #4299e1;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background: #3182ce;
-  }
-`;
+// Removed LoginButton; admin access handled via /admin route
 
-const AdminLink = styled(Link)`
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-`;
+// Admin link removed from header; admins navigate directly to /admin
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -221,27 +191,20 @@ const Header = () => {
   
   const handleLogout = () => {
     logout();
-    if (location.pathname.startsWith('/admin')) {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   return (
     <HeaderContainer>
       <HeaderContent>
         <Logo to="/">
-          <LogoImage src="/tl-logo.png" alt="Logo" />
+          <LogoImage src={`${process.env.PUBLIC_URL}/tl-logo.png`} alt="Logo" />
           <LogoText>Temari Learning</LogoText>
         </Logo>
         <Navigation>
           <Link to="/">Home</Link>
           <Link to="/about">About</Link>
           <Link to="/contact">Contact</Link>
-          {user?.role === 'admin' && (
-            <AdminLink to="/admin">
-              <FaCog /> Admin
-            </AdminLink>
-          )}
         </Navigation>
         
         {user ? (
@@ -262,11 +225,7 @@ const Header = () => {
               </DropdownMenu>
             )}
           </UserMenu>
-        ) : (
-          <LoginButton to="/login" state={{ from: location }}>
-            <FaUser /> Login
-          </LoginButton>
-        )}
+        ) : null}
       </HeaderContent>
     </HeaderContainer>
   );

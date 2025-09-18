@@ -134,7 +134,10 @@ const ExamsPage = () => {
           <FaArrowLeft /> Back to Home
         </BackButton>
         <Title>Select Your Exam</Title>
-        <Subtitle>Choose the standardized test you're preparing for to access relevant study materials.</Subtitle>
+        <Subtitle>
+          SAT: A U.S. college admissions exam that measures math, reading, and writing skills. 
+          GRE: A graduate admissions exam that evaluates verbal reasoning, quantitative reasoning, and analytical writing.
+        </Subtitle>
       </Header>
       
       <ExamsGrid>

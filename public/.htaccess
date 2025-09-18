@@ -1,0 +1,38 @@
+# React SPA routing for Apache (cPanel)
+# Place this file in the React project's public/ folder so it is copied into build/ on `npm run build`.
+
+# Disable MultiViews to prevent unexpected content negotiation
+Options -MultiViews
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # If the request is for an existing file or directory, serve it directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Otherwise, rewrite everything to index.html (React handles routing client-side)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Optional: Cache static assets aggressively (adjust max-age as needed)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Images
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png  "access plus 1 year"
+  ExpiresByType image/gif  "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  # Fonts
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType font/woff  "access plus 1 year"
+  ExpiresByType font/ttf   "access plus 1 year"
+  # JS/CSS
+  ExpiresByType text/javascript "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+</IfModule>

@@ -39,7 +39,7 @@ const AppContent = () => {
           <Route path="/exams" element={<ExamsPage />} />
           <Route path="/resource-categories/:examId" element={<ResourceCategoriesPage />} />
           <Route path="/levels/:levelId/grades" element={<LandingPage />} />
-          <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+          <Route path="/admin" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
           
           {/* Updated routes to include levelId */}
           <Route path="/students/:levelId/:grade" element={<StudentSelection />} />

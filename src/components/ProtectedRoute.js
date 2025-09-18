@@ -7,8 +7,8 @@ const ProtectedRoute = ({ children, requiredRole = 'admin' }) => {
   const location = useLocation();
 
   if (!user) {
-    // Redirect to login page, but save the current location they were trying to go to
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Redirect to admin login route, but save the current location they were trying to go to
+    return <Navigate to="/admin" state={{ from: location }} replace />;
   }
 
   // Check if user has the required role

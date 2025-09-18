@@ -162,7 +162,27 @@ const StudentSelection = () => {
           subject.id !== 'calculus' && subject.id !== 'physics'
         );
       case 'high':
-        return commonSubjects;
+        return [
+          ...commonSubjects,
+          {
+            id: 'biology',
+            title: 'Biology',
+            icon: <FaBook />,
+            description: 'Study of living organisms and life processes.'
+          },
+          {
+            id: 'chemistry',
+            title: 'Chemistry',
+            icon: <FaFlask />,
+            description: 'Explore substances, their properties, and reactions.'
+          },
+          {
+            id: 'physics',
+            title: 'Physics',
+            icon: <FaFlask />,
+            description: 'Study of matter, motion, and energy.'
+          }
+        ];
       case 'college':
         return [
           ...commonSubjects,

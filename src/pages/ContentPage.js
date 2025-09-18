@@ -1,12 +1,12 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { 
-  FaQuestionCircle, 
-  FaChalkboardTeacher, 
-  FaBookOpen, 
-  FaBookReader,
-  FaLink,
+import {
+  FaBookOpen,        // Reference Book
+  FaChalkboardTeacher, // Live Session
+  FaVideo,           // Video Lecture
+  FaFileAlt,         // Lecture Note
+  FaProjectDiagram,  // Interactive Simulation & Graphics
   FaChevronLeft
 } from 'react-icons/fa';
 
@@ -123,6 +123,8 @@ const ContentPage = () => {
       'maths': 'Mathematics',
       'science': 'Science',
       'english': 'English',
+      'biology': 'Biology',
+      'chemistry': 'Chemistry',
       'ict': 'ICT',
       'calculus': 'Calculus',
       'physics': 'Physics'
@@ -140,44 +142,44 @@ const ContentPage = () => {
 
   const contentItems = [
     {
-      id: 'questions',
-      title: 'Questions',
-      icon: <FaQuestionCircle />,
-      description: 'Practice questions and quizzes to test your understanding',
-      count: '150+ Questions',
-      type: 'questions'
+      id: 'reference-book',
+      title: 'Reference Book',
+      icon: <FaBookOpen />,
+      description: 'Curated textbooks and reference books for deeper study',
+      count: 'Updated regularly',
+      type: 'reference-book'
     },
     {
       id: 'live-session',
       title: 'Live Session',
       icon: <FaChalkboardTeacher />,
       description: 'Join live classes and interact with teachers',
-      count: 'Next session: Today 2:00 PM',
+      count: 'See upcoming sessions',
       type: 'live-session'
     },
     {
-      id: 'reference',
-      title: 'Reference Materials',
-      icon: <FaBookOpen />,
-      description: 'Additional study materials and resources',
-      count: '25+ Resources',
-      type: 'reference'
+      id: 'video-lecture',
+      title: 'Video Lecture',
+      icon: <FaVideo />,
+      description: 'Comprehensive video lectures to learn at your pace',
+      count: 'HD videos',
+      type: 'video-lecture'
     },
     {
-      id: 'lessons',
-      title: 'Lessons',
-      icon: <FaBookReader />,
-      description: 'Comprehensive video and text lessons',
-      count: '12 Lessons',
-      type: 'lessons'
+      id: 'lecture-note',
+      title: 'Lecture Note',
+      icon: <FaFileAlt />,
+      description: 'Downloadable lecture notes and summaries',
+      count: 'PDF/Docs',
+      type: 'lecture-note'
     },
     {
-      id: 'external-resources',
-      title: 'External Resources',
-      icon: <FaLink />,
-      description: 'Links to useful external resources and websites',
-      count: 'Manage links',
-      type: 'external-resources'
+      id: 'interactive-simulation-graphics',
+      title: 'Interactive Simulation & Graphics',
+      icon: <FaProjectDiagram />,
+      description: 'Hands-on simulations and visualizations to explore concepts',
+      count: 'Interactive content',
+      type: 'interactive-simulation-graphics'
     }
   ];
 
