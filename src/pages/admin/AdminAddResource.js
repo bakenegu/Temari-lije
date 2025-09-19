@@ -4,6 +4,9 @@ import styled from '@emotion/styled';
 import { FaArrowLeft, FaSave, FaPlus, FaTrash, FaFileImport, FaTimes, FaUpload, FaFileExcel, FaFileCsv } from 'react-icons/fa';
 import { listResources, saveResources } from '../../api/resourcesApi';
 
+// Helper function to generate unique IDs
+const generateUniqueId = () => `res_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
 const Container = styled.div`
   max-width: 1000px;
   margin: 0 auto;
@@ -570,7 +573,7 @@ const AdminAddResource = () => {
           const validResources = jsonData
             .filter(item => item && typeof item === 'object')
             .map(item => ({
-              id: item.id || '',
+              id: item.id || generateUniqueId(),
               title: item.title || item.name || '',
               url: item.url || item.link || ''
             }))
@@ -620,7 +623,7 @@ const AdminAddResource = () => {
           const url = parts[1].trim();
           
           if (title && url) {
-            parsedResources.push({ title, url });
+            parsedResources.push({ id: generateUniqueId(), title, url });
           }
         }
       }
