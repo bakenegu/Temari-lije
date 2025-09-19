@@ -199,7 +199,7 @@ const Header = () => {
       <HeaderContent>
         <Logo to="/">
           <LogoImage src={`${process.env.PUBLIC_URL}/tl-logo.png`} alt="Logo" />
-          <LogoText>Temari Learning</LogoText>
+          <LogoText>Temari Lije Learning Platform</LogoText>
         </Logo>
         <Navigation>
           <Link to="/">Home</Link>
@@ -216,10 +216,10 @@ const Header = () => {
             
             {showDropdown && (
               <DropdownMenu>
-                <DropdownItem to="/profile">
+                <DropdownItem to="/profile" key="profile">
                   <FaUser /> Profile
                 </DropdownItem>
-                <DropdownItem as="button" onClick={handleLogout}>
+                <DropdownItem as="button" onClick={handleLogout} key="logout">
                   <FaSignOutAlt /> Logout
                 </DropdownItem>
               </DropdownMenu>

@@ -6,7 +6,9 @@ import {
   FaArrowLeft, 
   FaExternalLinkAlt, 
   FaTrash, 
-  FaPlusCircle 
+  FaPlusCircle,
+  FaMinusSquare,
+  FaTrashAlt
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { listResources, deleteResource as apiDeleteResource } from '../api/resourcesApi';
@@ -251,6 +253,9 @@ const ResourceList = ({ isExam = false }) => {
   const { user } = useAuth();
   const [resources, setResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedResources, setSelectedResources] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   // Load resources from backend API on component mount
   useEffect(() => {
@@ -291,6 +296,60 @@ const ResourceList = ({ isExam = false }) => {
     }
   };
 
+  const toggleResourceSelection = (id) => {
+    setSelectedResources(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(resourceId => resourceId !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedResources.length === resources.length) {
+      // Deselect all
+      setSelectedResources([]);
+    } else {
+      // Select all
+      setSelectedResources(resources.map(r => r.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedResources.length === 0) return;
+    
+    setShowBulkDeleteConfirm(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    setIsDeleting(true);
+    const prev = resources;
+    // Optimistic update
+    setResources(resources.filter(r => !selectedResources.includes(r.id)));
+    
+    try {
+      // Delete each selected resource
+      const deletePromises = selectedResources.map(id => 
+        apiDeleteResource({ isExam, examId, levelId, grade, subject, resourceType }, id)
+      );
+      
+      await Promise.all(deletePromises);
+      setSelectedResources([]);
+    } catch (e) {
+      console.error('Bulk delete failed:', e);
+      setResources(prev);
+      alert('Failed to delete some resources. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowBulkDeleteConfirm(false);
+    }
+  };
+
+  const cancelBulkDelete = () => {
+    setShowBulkDeleteConfirm(false);
+  };
+
   if (isLoading) {
     return (
       <Container>
@@ -318,23 +377,61 @@ const ResourceList = ({ isExam = false }) => {
           </p>
         </div>
         
-        {user?.role === 'admin' && (
-          isExam ? (
-            <AddButton to={`/admin/add-resource/exams/${examId}/${resourceType}`}>
-              <FaPlus /> Add Resource
-            </AddButton>
-          ) : (
-            <AddButton to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}>
-              <FaPlus /> Add Resource
-            </AddButton>
-          )
-        )}
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          {user?.role === 'admin' && selectedResources.length > 0 && (
+            <button 
+              onClick={handleBulkDelete}
+              style={{
+                background: '#e53e3e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '0.5rem 1rem',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <FaTrashAlt /> Delete Selected ({selectedResources.length})
+            </button>
+          )}
+          
+          {user?.role === 'admin' && (
+            isExam ? (
+              <AddButton to={`/admin/add-resource/exams/${examId}/${resourceType}`}>
+                <FaPlus /> Add Resource
+              </AddButton>
+            ) : (
+              <AddButton to={`/admin/add-resource/${levelId}/${grade}/${subject}/${resourceType}`}>
+                <FaPlus /> Add Resource
+              </AddButton>
+            )
+          )}
+        </div>
       </Header>
 
       {resources.length > 0 ? (
         <ResourceTable>
           <thead>
             <tr>
+              {user?.role === 'admin' && (
+                <th style={{ width: '40px', textAlign: 'center' }}>
+                  <ActionButton 
+                    onClick={toggleSelectAll}
+                    title={selectedResources.length === resources.length ? 'Deselect all' : 'Select all'}
+                  >
+                    {selectedResources.length === resources.length ? (
+                      <FaMinusSquare size={18} />
+                    ) : selectedResources.length > 0 ? (
+                      <FaMinusSquare size={18} style={{ opacity: 0.5 }} />
+                    ) : (
+                      <div style={{ width: 18, height: 18, border: '1px solid #718096', borderRadius: '2px' }} />
+                    )}
+                  </ActionButton>
+                </th>
+              )}
               <th className="title-col">Resource Title</th>
               <th className="actions-col">Actions</th>
             </tr>
@@ -342,6 +439,31 @@ const ResourceList = ({ isExam = false }) => {
           <tbody>
             {resources.map((resource) => (
               <tr key={resource.id}>
+                {user?.role === 'admin' && (
+                  <td style={{ textAlign: 'center' }}>
+                    <ActionButton 
+                      onClick={() => toggleResourceSelection(resource.id)}
+                      title={selectedResources.includes(resource.id) ? 'Deselect' : 'Select'}
+                    >
+                      {selectedResources.includes(resource.id) ? (
+                        <div style={{ 
+                          width: 18, 
+                          height: 18, 
+                          border: '1px solid #4299e1', 
+                          backgroundColor: '#4299e1', 
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <span style={{ color: 'white', fontSize: '12px' }}>✓</span>
+                        </div>
+                      ) : (
+                        <div style={{ width: 18, height: 18, border: '1px solid #718096', borderRadius: '2px' }} />
+                      )}
+                    </ActionButton>
+                  </td>
+                )}
                 <td>
                   <a 
                     href={resource.url} 
@@ -411,6 +533,30 @@ const ResourceList = ({ isExam = false }) => {
         </div>
       )}
 
+      {/* Bulk delete confirmation modal */}
+      {showBulkDeleteConfirm && (
+        <ModalOverlay>
+          <ModalContent>
+            <h2 style={{ marginTop: 0 }}>Confirm Deletion</h2>
+            <p>Are you sure you want to delete {selectedResources.length} selected resources?</p>
+            <p style={{ color: '#e53e3e' }}>This action cannot be undone.</p>
+            
+            <ButtonGroup>
+              <CancelButton onClick={cancelBulkDelete} disabled={isDeleting}>
+                Cancel
+              </CancelButton>
+              <SaveButton 
+                onClick={confirmBulkDelete} 
+                disabled={isDeleting}
+                style={{ background: '#e53e3e' }}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Resources'}
+              </SaveButton>
+            </ButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      
       {/* Resource adding is now handled in a separate admin page */}
     </Container>
   );

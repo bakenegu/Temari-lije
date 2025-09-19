@@ -19,9 +19,9 @@ const PageBackground = styled('div')({
   padding: 0,
   position: 'relative',
   overflow: 'hidden',
-  background: 'url(\'/ethiopia.png\') no-repeat center center fixed',
-  backgroundSize: '100% 100%',
-  backgroundAttachment: 'fixed',
+  background: 'url("/ethbackground.png") no-repeat center center',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
   '&::before': {
     content: '""',
     position: 'fixed',
@@ -29,12 +29,15 @@ const PageBackground = styled('div')({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     zIndex: 0
   },
   '& > *': {
     position: 'relative',
     zIndex: 1
+  },
+  '@media (max-width: 768px)': {
+    backgroundPosition: 'center center',
   }
 });
 
@@ -60,7 +63,7 @@ const Title = styled('h1')({
   textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
   fontWeight: 700,
   letterSpacing: '-0.5px',
-  background: 'linear-gradient(45deg, #1a365d, #2c5282)',
+  background: 'linear-gradient(45deg, #1a365d, #3182ce)',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
   position: 'relative',
@@ -71,9 +74,9 @@ const Title = styled('h1')({
     bottom: 0,
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '100px',
+    width: '120px',
     height: '4px',
-    background: 'linear-gradient(90deg, #e53e3e, #dd6b20)',
+    background: 'linear-gradient(90deg, #3182ce, #63b3ed)',
     borderRadius: '2px'
   },
   '@media (max-width: 768px)': {
@@ -82,13 +85,13 @@ const Title = styled('h1')({
 });
 
 const Subtitle = styled('p')({
-  color: '#4a5568',
+  color: '#2d3748',
   fontSize: '1.3rem',
   marginBottom: '3rem',
   textAlign: 'center',
   maxWidth: '700px',
   lineHeight: 1.6,
-  fontWeight: 400,
+  fontWeight: 500,
   textShadow: '1px 1px 2px rgba(255, 255, 255, 0.8)',
   padding: '0 1rem',
   '@media (max-width: 768px)': {
@@ -103,7 +106,16 @@ const LevelsGrid = styled('div')({
   gap: '1.5rem',
   width: '100%',
   padding: '1.5rem',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  '@media (max-width: 768px)': {
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '1rem',
+    padding: '1rem'
+  },
+  '@media (max-width: 480px)': {
+    gridTemplateColumns: '1fr',
+    padding: '0.75rem'
+  }
 });
 
 const ContainerWrapper = styled('div')({
@@ -113,7 +125,7 @@ const ContainerWrapper = styled('div')({
 });
 
 const LevelCard = styled('div')(() => ({
-  background: 'rgba(255, 255, 255, 0.95)',
+  background: 'rgba(255, 255, 255, 0.9)',
   borderRadius: '15px',
   overflow: 'hidden',
   boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
@@ -127,7 +139,8 @@ const LevelCard = styled('div')(() => ({
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
     boxShadow: '0 15px 30px rgba(0, 0, 0, 0.2)',
-    background: 'rgba(255, 255, 255, 0.98)'
+    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.95))',
+    borderColor: '#63b3ed'
   }
 }));
 
@@ -156,6 +169,13 @@ const ImageContainer = styled('div')({
   '&:hover img': {
     transform: 'scale(1.05)',
     filter: 'grayscale(0%) contrast(120%)'
+  },
+  '@media (max-width: 768px)': {
+    height: '180px',
+    padding: '1rem'
+  },
+  '@media (max-width: 480px)': {
+    height: '160px'
   }
 });
 

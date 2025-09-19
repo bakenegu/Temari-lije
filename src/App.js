@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import EducationLevelPage from './pages/EducationLevelPage';
 import ExamsPage from './pages/ExamsPage';
 import ResourceCategoriesPage from './pages/ResourceCategoriesPage';
@@ -23,8 +24,10 @@ const AppContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
-  padding: 2rem 0;
+  padding: 0;
   background-color: #f5f7fa;
+  position: relative;
+  z-index: 1;
 `;
 
 const AppContent = () => {
@@ -73,6 +76,7 @@ const AppContent = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </MainContent>
+      <Footer />
     </AppContainer>
   );
 };
