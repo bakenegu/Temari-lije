@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Resource Storage</title>
+    <script>
+        async function testStorage() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing storage...';
+            
+            try {
+                // Test saving a resource
+                const saveResponse = await fetch('/api/resources.php?action=save&levelId=1&grade=9&subject=math&resourceType=books', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resources: [{
+                            title: 'Test Book',
+                            url: 'https://example.com/test'
+                        }]
+                    })
+                });
+                
+                const saveResult = await saveResponse.json();
+                if (!saveResult.ok) throw new Error(saveResult.error || 'Save failed');
+                
+                // Test listing resources
+                const listResponse = await fetch('/api/resources.php?action=list&levelId=1&grade=9&subject=math&resourceType=books');
+                const listResult = await listResponse.json();
+                
+                if (!listResult.ok) throw new Error(listResult.error || 'List failed');
+                
+                resultDiv.innerHTML = `
+                    <h3>Test Results</h3>
+                    <p>Save successful: ${JSON.stringify(saveResult)}</p>
+                    <p>Resources found: ${listResult.resources.length}</p>
+                    <pre>${JSON.stringify(listResult.resources, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>Error</h3>
+                    <p>${error.message}</p>
+                    <p>Make sure you're running this on a PHP server and the data directory is writable.</p>
+                `;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Test Resource Storage</h1>
+    <button onclick="testStorage()">Run Test</button>
+    <div id="result"></div>
+    
+    <h3>Instructions</h3>
+    <ol>
+        <li>Make sure you're running this on a PHP server (not file://)</li>
+        <li>Click the "Run Test" button above</li>
+        <li>Check if the test passes and resources are saved</li>
+    </ol>
+</body>
+</html>

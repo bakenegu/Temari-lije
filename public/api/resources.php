@@ -90,20 +90,73 @@ $body = json_decode($input, true);
 if (!is_array($body)) { $body = []; }
 
 $params = array_merge($_GET, $body);
-$key = get_key_from_params($params);
 
-if ($key === '') {
-  http_response_code(400);
-  echo json_encode(['ok' => false, 'error' => 'Missing or invalid parameters']);
-  exit;
+// For 'search' we do not require a composite key; otherwise we do.
+$key = null;
+if ($action !== 'search') {
+  $key = get_key_from_params($params);
+  if ($key === '') {
+    http_response_code(400);
+    echo json_encode(['ok' => false, 'error' => 'Missing or invalid parameters']);
+    exit;
+  }
 }
 
 $data = read_json_file($dataFile);
-if (!isset($data[$key]) || !is_array($data[$key])) {
-  $data[$key] = [];
+if ($action !== 'search') {
+  if (!isset($data[$key]) || !is_array($data[$key])) {
+    $data[$key] = [];
+  }
 }
 
 switch ($action) {
+  case 'search':
+    $q = isset($params['q']) ? trim((string)$params['q']) : '';
+    if ($q === '') {
+      echo json_encode(['ok' => true, 'resources' => []]);
+      break;
+    }
+    $qLower = strtolower($q);
+    $data = read_json_file($dataFile);
+    $results = [];
+    foreach ($data as $k => $arr) {
+      if (!is_array($arr)) continue;
+      // Parse context from key
+      $ctx = [];
+      if (strpos($k, 'exam_resources_') === 0) {
+        // exam_resources_{examId}_{resourceType}
+        $parts = explode('_', substr($k, strlen('exam_resources_')));
+        $examId = isset($parts[0]) ? $parts[0] : '';
+        $resourceType = isset($parts[1]) ? $parts[1] : '';
+        $ctx = [ 'isExam' => true, 'examId' => $examId, 'resourceType' => $resourceType ];
+      } elseif (strpos($k, 'resources_') === 0) {
+        // resources_{levelId}_{grade}_{subject}_{resourceType}
+        $parts = explode('_', substr($k, strlen('resources_')));
+        $levelId = isset($parts[0]) ? $parts[0] : '';
+        $grade = isset($parts[1]) ? $parts[1] : '';
+        $subject = isset($parts[2]) ? $parts[2] : '';
+        $resourceType = isset($parts[3]) ? $parts[3] : '';
+        $ctx = [ 'isExam' => false, 'levelId' => $levelId, 'grade' => $grade, 'subject' => $subject, 'resourceType' => $resourceType ];
+      } else {
+        continue;
+      }
+      foreach ($arr as $r) {
+        if (!is_array($r)) continue;
+        $title = isset($r['title']) ? (string)$r['title'] : '';
+        $url = isset($r['url']) ? (string)$r['url'] : '';
+        if ($title === '' && $url === '') continue;
+        if (strpos(strtolower($title), $qLower) !== false || strpos(strtolower($url), $qLower) !== false) {
+          $results[] = [
+            'id' => isset($r['id']) ? (string)$r['id'] : '',
+            'title' => $title,
+            'url' => $url,
+            'context' => $ctx,
+          ];
+        }
+      }
+    }
+    echo json_encode(['ok' => true, 'resources' => $results]);
+    break;
   case 'list':
     echo json_encode(['ok' => true, 'resources' => $data[$key]]);
     break;

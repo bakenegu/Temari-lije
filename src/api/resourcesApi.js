@@ -114,3 +114,57 @@ export async function deleteResource({ isExam = false, examId, levelId, grade, s
     throw err;
   }
 }
+
+// Search across all stored resources (server-wide)
+export async function searchResources(query) {
+  const url = `${API_URL}?${buildQuery({ action: 'search', q: query })}`;
+  try {
+    const res = await fetch(url, { method: 'GET', credentials: 'same-origin' });
+    if (!res.ok) throw new Error(`Search failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Search error');
+    return json.resources || [];
+  } catch (err) {
+    if (isDevEnv() && typeof window !== 'undefined') {
+      // Dev fallback: scan localStorage keys we control
+      try {
+        const results = [];
+        const qLower = String(query || '').toLowerCase();
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i);
+          if (!k) continue;
+          let ctx = null;
+          if (k.startsWith('exam_resources_')) {
+            const rest = k.slice('exam_resources_'.length);
+            const parts = rest.split('_');
+            const examId = parts[0] || '';
+            const resourceType = parts[1] || '';
+            ctx = { isExam: true, examId, resourceType };
+          } else if (k.startsWith('resources_')) {
+            const rest = k.slice('resources_'.length);
+            const parts = rest.split('_');
+            const levelId = parts[0] || '';
+            const grade = parts[1] || '';
+            const subject = parts[2] || '';
+            const resourceType = parts[3] || '';
+            ctx = { isExam: false, levelId, grade, subject, resourceType };
+          }
+          if (!ctx) continue;
+          const raw = window.localStorage.getItem(k);
+          let arr = [];
+          try { arr = raw ? JSON.parse(raw) : []; } catch (_) { arr = []; }
+          if (!Array.isArray(arr)) continue;
+          for (const r of arr) {
+            const title = (r && r.title) ? String(r.title) : '';
+            const url = (r && r.url) ? String(r.url) : '';
+            if (!qLower || title.toLowerCase().includes(qLower) || url.toLowerCase().includes(qLower)) {
+              results.push({ id: r.id || '', title, url, context: ctx });
+            }
+          }
+        }
+        return results;
+      } catch (_) { return []; }
+    }
+    throw err;
+  }
+}

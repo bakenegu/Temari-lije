@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { FaSchool, FaGraduationCap, FaUserGraduate, FaChalkboardTeacher, FaClipboardList } from 'react-icons/fa';
+import { FaSchool, FaGraduationCap, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaSearch, FaExternalLinkAlt, FaFolderOpen, FaPlay } from 'react-icons/fa';
+import { searchResources } from '../api/resourcesApi';
 
 // Image paths
 const imagePaths = {
@@ -39,6 +40,104 @@ const PageBackground = styled('div')({
   '@media (max-width: 768px)': {
     backgroundPosition: 'center center',
   }
+});
+
+// Search UI styles
+const SearchContainer = styled('div')({
+  width: '100%',
+  maxWidth: '900px',
+  margin: '0 auto 1.5rem auto',
+  position: 'relative'
+});
+
+const SearchInputWrapper = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  background: 'white',
+  borderRadius: '10px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+  border: '1px solid #e2e8f0',
+  padding: '0.5rem 0.75rem',
+  gap: '0.5rem'
+});
+
+const SearchInput = styled('input')({
+  flex: 1,
+  border: 'none',
+  outline: 'none',
+  fontSize: '1rem',
+  padding: '0.5rem',
+  color: '#2d3748'
+});
+
+const ResultsPanel = styled('div')({
+  position: 'relative',
+  background: 'white',
+  borderRadius: '10px',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+  marginTop: '0.75rem',
+  overflow: 'hidden'
+});
+
+const ResultRow = styled('div')({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0.75rem 1rem',
+  borderBottom: '1px solid #edf2f7',
+  gap: '1rem',
+  ':last-of-type': { borderBottom: 'none' }
+});
+
+const ResultInfo = styled('div')({
+  minWidth: 0
+});
+
+const ResultTitle = styled('div')({
+  color: '#2d3748',
+  fontWeight: 600,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
+});
+
+const ResultMeta = styled('div')({
+  color: '#718096',
+  fontSize: '0.85rem',
+  marginTop: '0.25rem'
+});
+
+const Actions = styled('div')({
+  display: 'flex',
+  gap: '0.5rem',
+  flexShrink: 0
+});
+
+const PrimaryButton = styled('button')({
+  background: '#4299e1',
+  color: 'white',
+  border: 'none',
+  borderRadius: '6px',
+  padding: '0.4rem 0.6rem',
+  fontSize: '0.9rem',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.35rem'
+});
+
+const SecondaryButton = styled('button')({
+  background: '#edf2f7',
+  color: '#2d3748',
+  border: 'none',
+  borderRadius: '6px',
+  padding: '0.4rem 0.6rem',
+  fontSize: '0.9rem',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.35rem'
 });
 
 const Container = styled('div')({
@@ -209,6 +308,53 @@ const LevelDescription = styled('p')({
 
 const EducationLevelPage = () => {
   const navigate = useNavigate();
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
+  const [debounced, setDebounced] = useState('');
+
+  // Debounce query
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(q.trim()), 300);
+    return () => clearTimeout(id);
+  }, [q]);
+
+  // Extract YouTube ID
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./, '');
+      if (host === 'youtu.be') {
+        const seg = u.pathname.split('/').filter(Boolean);
+        return seg[0] || null;
+      }
+      const v = u.searchParams.get('v');
+      if (v) return v;
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts.length >= 2 && ['embed', 'shorts', 'v'].includes(parts[0])) return parts[1];
+      return null;
+    } catch { return null; }
+  };
+
+  // Perform search
+  useEffect(() => {
+    let active = true;
+    if (!debounced || debounced.length < 2) { setResults([]); return; }
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await searchResources(debounced);
+        if (!active) return;
+        setResults(Array.isArray(res) ? res : []);
+      } catch {
+        if (active) setResults([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, [debounced]);
 
   const educationLevels = [
     {
@@ -270,11 +416,74 @@ const EducationLevelPage = () => {
     }
   };
 
+  const openResource = (item) => {
+    const videoId = getYouTubeVideoId(item.url);
+    if (videoId) {
+      navigate(`/watch/youtube/${videoId}`, { state: { title: item.title, sourceUrl: item.url } });
+      return;
+    }
+    window.open(item.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const goToSection = (ctx) => {
+    if (ctx?.isExam) {
+      navigate(`/content/exams/${ctx.examId}/${ctx.resourceType}`);
+    } else {
+      navigate(`/content/${ctx.levelId}/${ctx.grade}/${ctx.subject}/${ctx.resourceType}`);
+    }
+  };
+
   return (
     <PageBackground>
       <Container>
         <Title>Select Your Education Level</Title>
-      <Subtitle>Choose the education level that best matches your current or desired learning path.</Subtitle>
+
+      {/* Search resources */}
+      <SearchContainer>
+        <SearchInputWrapper>
+          <FaSearch color="#718096" />
+          <SearchInput
+            value={q}
+            placeholder="Search resources (min 2 characters)..."
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </SearchInputWrapper>
+        {(q.trim().length >= 2) && (
+          <ResultsPanel>
+            {loading && (
+              <ResultRow><ResultInfo>Searching...</ResultInfo></ResultRow>
+            )}
+            {!loading && results.length === 0 && (
+              <ResultRow><ResultInfo>No results</ResultInfo></ResultRow>
+            )}
+            {!loading && results.map((r) => (
+              <ResultRow key={`${r.context?.isExam ? 'exam' : 'edu'}_${r.id}`}>
+                <ResultInfo>
+                  <ResultTitle title={r.title}>{r.title}</ResultTitle>
+                  <ResultMeta>
+                    {r.context?.isExam ? (
+                      <>Exam: {String(r.context.examId || '').toUpperCase()} • Type: {String(r.context.resourceType || '')}</>
+                    ) : (
+                      <>Level: {r.context?.levelId} • Grade: {r.context?.grade} • Subject: {r.context?.subject} • Type: {r.context?.resourceType}</>
+                    )}
+                  </ResultMeta>
+                </ResultInfo>
+                <Actions>
+                  <PrimaryButton onClick={() => openResource(r)} title="Open resource">
+                    <FaPlay /> Open
+                  </PrimaryButton>
+                  <SecondaryButton onClick={() => goToSection(r.context)} title="View section">
+                    <FaFolderOpen /> Section
+                  </SecondaryButton>
+                  <SecondaryButton onClick={() => window.open(r.url, '_blank', 'noopener,noreferrer')} title={r.url}>
+                    <FaExternalLinkAlt /> Link
+                  </SecondaryButton>
+                </Actions>
+              </ResultRow>
+            ))}
+          </ResultsPanel>
+        )}
+      </SearchContainer>
       
       <ContainerWrapper>
         <LevelsGrid>

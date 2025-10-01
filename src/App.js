@@ -12,6 +12,7 @@ import ContentPage from './pages/ContentPage';
 import ResourceList from './pages/ResourceList';
 import LoginPage from './pages/LoginPage';
 import AdminAddResource from './pages/admin/AdminAddResource';
+import VideoPlayerPage from './pages/VideoPlayerPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import styled from '@emotion/styled';
 import './App.css';
@@ -55,6 +56,11 @@ const AppContent = () => {
           <Route 
             path="/content/exams/:examId/:resourceType"
             element={<ResourceList isExam={true} />}
+          />
+          {/* Embedded YouTube player route */}
+          <Route 
+            path="/watch/youtube/:videoId" 
+            element={<VideoPlayerPage />} 
           />
           {/* Admin manage page for exam resources */}
           <Route 
