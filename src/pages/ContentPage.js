@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import {
+  FaBook,            // Textbook
   FaBookOpen,        // Reference Book
   FaChalkboardTeacher, // Live Session
   FaVideo,           // Video Lecture
@@ -142,10 +143,18 @@ const ContentPage = () => {
 
   const contentItems = [
     {
+      id: 'textbook',
+      title: 'Textbook',
+      icon: <FaBook />,
+      description: 'Official course textbook with comprehensive coverage of the subject',
+      count: 'Complete curriculum',
+      type: 'textbook'
+    },
+    {
       id: 'reference-book',
       title: 'Reference Book',
       icon: <FaBookOpen />,
-      description: 'Curated textbooks and reference books for deeper study',
+      description: 'Additional reference books for deeper study',
       count: 'Updated regularly',
       type: 'reference-book'
     },
