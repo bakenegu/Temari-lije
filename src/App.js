@@ -12,6 +12,7 @@ import ContentPage from './pages/ContentPage';
 import ResourceList from './pages/ResourceList';
 import LoginPage from './pages/LoginPage';
 import AdminAddResource from './pages/admin/AdminAddResource';
+import ExamInfoPage from './pages/ExamInfoPage';
 import VideoPlayerPage from './pages/VideoPlayerPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import styled from '@emotion/styled';
@@ -42,6 +43,7 @@ const AppContent = () => {
           <Route path="/" element={<EducationLevelPage />} />
           <Route path="/exams" element={<ExamsPage />} />
           <Route path="/resource-categories/:examId" element={<ResourceCategoriesPage />} />
+          <Route path="/exams/:examId/info" element={<ExamInfoPage />} />
           <Route path="/levels/:levelId/grades" element={<LandingPage />} />
           <Route path="/admin" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
           

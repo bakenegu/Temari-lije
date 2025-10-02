@@ -63,13 +63,19 @@ export async function listResources({ isExam = false, examId, levelId, grade, su
 }
 
 export async function saveResources({ isExam = false, examId, levelId, grade, subject, resourceType }, resources) {
+  // Add createdAt timestamp to each resource if it doesn't exist
+  const resourcesWithTimestamps = resources.map(resource => ({
+    ...resource,
+    createdAt: resource.createdAt || new Date().toISOString(),
+  }));
+
   const base = isExam ? { isExam: 1, examId, resourceType } : { levelId, grade, subject, resourceType };
   try {
     const res = await fetch(`${API_URL}?action=save`, {
       method: 'POST',
       headers: buildHeaders(true),
       credentials: 'same-origin',
-      body: JSON.stringify({ ...base, resources }),
+      body: JSON.stringify({ ...base, resources: resourcesWithTimestamps }),
     });
     if (!res.ok) throw new Error(`Save failed: ${res.status}`);
     const json = await res.json();
@@ -79,8 +85,8 @@ export async function saveResources({ isExam = false, examId, levelId, grade, su
     if (isDevEnv() && typeof window !== 'undefined') {
       try {
         const key = localKey({ isExam, examId, levelId, grade, subject, resourceType });
-        window.localStorage.setItem(key, JSON.stringify(resources));
-        return { ok: true, count: resources.length };
+        window.localStorage.setItem(key, JSON.stringify(resourcesWithTimestamps));
+        return { ok: true, count: resourcesWithTimestamps.length };
       } catch (_) { /* ignore */ }
     }
     throw err;
@@ -116,6 +122,72 @@ export async function deleteResource({ isExam = false, examId, levelId, grade, s
 }
 
 // Search across all stored resources (server-wide)
+// Get recently added resources (newest first)
+export async function getRecentResources(limit = 5) {
+  const url = `${API_URL}?${buildQuery({ action: 'recent', limit })}`;
+  try {
+    const res = await fetch(url, { method: 'GET', credentials: 'same-origin' });
+    if (!res.ok) throw new Error(`Fetch recent failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Recent resources error');
+    return json.resources || [];
+  } catch (err) {
+    if (isDevEnv() && typeof window !== 'undefined') {
+      // Dev fallback: scan localStorage for recent items
+      try {
+        const allResources = [];
+        
+        // Get all resources from localStorage
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const key = window.localStorage.key(i);
+          if (!key) continue;
+          
+          let ctx = null;
+          if (key.startsWith('exam_resources_')) {
+            const rest = key.slice('exam_resources_'.length);
+            const parts = rest.split('_');
+            const examId = parts[0] || '';
+            const resourceType = parts[1] || '';
+            ctx = { isExam: true, examId, resourceType };
+          } else if (key.startsWith('resources_')) {
+            const rest = key.slice('resources_'.length);
+            const parts = rest.split('_');
+            const levelId = parts[0] || '';
+            const grade = parts[1] || '';
+            const subject = parts[2] || '';
+            const resourceType = parts[3] || '';
+            ctx = { isExam: false, levelId, grade, subject, resourceType };
+          }
+          
+          if (!ctx) continue;
+          
+          const raw = window.localStorage.getItem(key);
+          let arr = [];
+          try { arr = raw ? JSON.parse(raw) : []; } catch (_) { arr = []; }
+          
+          // Add each resource with its context and creation time
+          arr.forEach(resource => {
+            allResources.push({
+              ...resource,
+              // Use the resource's timestamp or current time if not available
+              createdAt: resource.createdAt || new Date().toISOString(),
+              context: ctx
+            });
+          });
+        }
+        
+        // Sort by creation date (newest first) and limit results
+        return allResources
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, limit);
+      } catch (_) { 
+        return []; 
+      }
+    }
+    throw err;
+  }
+}
+
 export async function searchResources(query) {
   const url = `${API_URL}?${buildQuery({ action: 'search', q: query })}`;
   try {

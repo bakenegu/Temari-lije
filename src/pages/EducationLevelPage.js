@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { FaSchool, FaGraduationCap, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaSearch, FaExternalLinkAlt, FaFolderOpen, FaPlay } from 'react-icons/fa';
+import { useDebounce } from 'use-debounce';
+import { FaSchool, FaGraduationCap, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaSearch, FaExternalLinkAlt, FaFolderOpen, FaPlay, FaArrowRight, FaClock, FaTimes } from 'react-icons/fa';
+import { getRecentResources } from '../api/resourcesApi';
 import { searchResources } from '../api/resourcesApi';
 
 // Image paths
@@ -12,6 +14,147 @@ const imagePaths = {
   college: '/college.png',
   exams: '/SATGRE.png'
 };
+
+// Modal styles
+const ModalOverlay = styled('div')({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 1000,
+  padding: '1rem',
+});
+
+const ModalContent = styled('div')({
+  backgroundColor: 'white',
+  borderRadius: '12px',
+  width: '100%',
+  maxWidth: '800px',
+  maxHeight: '80vh',
+  display: 'flex',
+  flexDirection: 'column',
+  boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+  overflow: 'hidden',
+});
+
+const ModalHeader = styled('div')({
+  padding: '1.25rem 1.5rem',
+  borderBottom: '1px solid #e2e8f0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  '& h3': {
+    margin: 0,
+    fontSize: '1.25rem',
+    color: '#2d3748',
+  },
+});
+
+const CloseButton = styled('button')({
+  background: 'none',
+  border: 'none',
+  fontSize: '1.25rem',
+  color: '#718096',
+  cursor: 'pointer',
+  padding: '0.25rem',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '4px',
+  '&:hover': {
+    backgroundColor: '#f7fafc',
+    color: '#4a5568',
+  },
+});
+
+const ModalBody = styled('div')({
+  padding: '1.5rem',
+  overflowY: 'auto',
+  flex: 1,
+});
+
+const ResourceList = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1rem',
+});
+
+const ResourceItem = styled('div')({
+  backgroundColor: '#f8fafc',
+  borderRadius: '8px',
+  padding: '1rem',
+  border: '1px solid #e2e8f0',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    borderColor: '#cbd5e0',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+  },
+});
+
+const ResourceTitle = styled('h4')({
+  margin: '0 0 0.5rem 0',
+  color: '#2d3748',
+  fontSize: '1rem',
+  fontWeight: 600,
+});
+
+const ResourceMeta = styled('div')({
+  display: 'flex',
+  gap: '0.75rem',
+  fontSize: '0.875rem',
+  color: '#718096',
+  marginBottom: '0.75rem',
+  flexWrap: 'wrap',
+});
+
+const ResourceActions = styled('div')({
+  display: 'flex',
+  gap: '0.75rem',
+});
+
+const ViewButton = styled('button')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  backgroundColor: '#4299e1',
+  color: 'white',
+  border: 'none',
+  borderRadius: '6px',
+  padding: '0.4rem 0.8rem',
+  fontSize: '0.875rem',
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: '#3182ce',
+  },
+});
+
+const GoToSectionButton = styled('button')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  backgroundColor: '#edf2f7',
+  color: '#4a5568',
+  border: 'none',
+  borderRadius: '6px',
+  padding: '0.4rem 0.8rem',
+  fontSize: '0.875rem',
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: '#e2e8f0',
+  },
+});
+
+const NoResources = styled('div')({
+  textAlign: 'center',
+  color: '#718096',
+  padding: '2rem',
+  fontSize: '1rem',
+});
 
 const PageBackground = styled('div')({
   width: '100%',
@@ -223,25 +366,43 @@ const ContainerWrapper = styled('div')({
   margin: '0 auto'
 });
 
-const LevelCard = styled('div')(() => ({
-  background: 'rgba(255, 255, 255, 0.9)',
+const LevelCard = styled('div')(({ isNew }) => ({
+  background: isNew ? 'linear-gradient(135deg, rgba(255, 250, 230, 0.95), rgba(255, 245, 215, 0.95))' : 'rgba(255, 255, 255, 0.9)',
   borderRadius: '15px',
   overflow: 'hidden',
-  boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
+  boxShadow: isNew ? '0 8px 20px rgba(247, 196, 66, 0.25)' : '0 8px 20px rgba(0, 0, 0, 0.15)',
   cursor: 'pointer',
   transition: 'all 0.3s ease',
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
   backdropFilter: 'blur(5px)',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
+  border: isNew ? '1px solid #f7c542' : '1px solid rgba(255, 255, 255, 0.3)',
+  position: 'relative',
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: '0 15px 30px rgba(0, 0, 0, 0.2)',
-    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.95))',
-    borderColor: '#63b3ed'
+    boxShadow: isNew ? '0 15px 30px rgba(247, 196, 66, 0.35)' : '0 15px 30px rgba(0, 0, 0, 0.2)',
+    background: isNew 
+      ? 'linear-gradient(135deg, rgba(255, 248, 230, 0.98), rgba(255, 238, 200, 0.95))' 
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.95))',
+    borderColor: isNew ? '#f7c542' : '#63b3ed'
   }
 }));
+
+const NewBadge = styled('div')({
+  position: 'absolute',
+  top: '12px',
+  right: '12px',
+  backgroundColor: '#f7c542',
+  color: '#7a5c10',
+  padding: '4px 10px',
+  borderRadius: '12px',
+  fontSize: '0.75rem',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+});
 
 const ImageContainer = styled('div')({
   position: 'relative',
@@ -309,15 +470,11 @@ const LevelDescription = styled('p')({
 const EducationLevelPage = () => {
   const navigate = useNavigate();
   const [q, setQ] = useState('');
-  const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
-  const [debounced, setDebounced] = useState('');
-
-  // Debounce query
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(q.trim()), 300);
-    return () => clearTimeout(id);
-  }, [q]);
+  const [loading, setLoading] = useState(false);
+  const [debounced] = useDebounce(q, 300);
+  const [recentResources, setRecentResources] = useState([]);
+  const [showRecentModal, setShowRecentModal] = useState(false);
 
   // Extract YouTube ID
   const getYouTubeVideoId = (url) => {
@@ -400,10 +557,39 @@ const EducationLevelPage = () => {
       image: imagePaths.exams,
       icon: <FaClipboardList />,
       isExam: true
+    },
+    {
+      id: 'upcoming',
+      title: 'New & Upcoming',
+      description: 'Freshly added resources and upcoming content',
+      image: imagePaths.elementary,
+      icon: <FaClock />,
+      isNew: true,
+      isExam: false,
+      onClick: () => setShowRecentModal(true)
     }
   ];
 
+  // Load recent resources on component mount
+  useEffect(() => {
+    const loadRecentResources = async () => {
+      try {
+        const recent = await getRecentResources(5);
+        setRecentResources(recent);
+      } catch (error) {
+        console.error('Error loading recent resources:', error);
+      }
+    };
+    
+    loadRecentResources();
+  }, []);
+
   const handleLevelSelect = (level) => {
+    if (level.onClick) {
+      level.onClick();
+      return;
+    }
+    
     if (level.id === 'exams') {
       // Navigate to the exams selection page
       navigate('/exams');
@@ -433,8 +619,68 @@ const EducationLevelPage = () => {
     }
   };
 
+  // Render human-friendly context text for a resource
+  const renderContext = (ctx) => {
+    if (!ctx) return '';
+    if (ctx.isExam) {
+      return `Exam: ${String(ctx.examId || '').toUpperCase()} • Type: ${String(ctx.resourceType || '')}`;
+    }
+    return `Level: ${String(ctx.levelId || '')} • Grade: ${String(ctx.grade || '')} • Subject: ${String(ctx.subject || '')} • Type: ${String(ctx.resourceType || '')}`;
+  };
+
+  // Modal component for recent resources
+  const RecentResourcesModal = ({ resources, onClose }) => (
+    <ModalOverlay>
+      <ModalContent>
+        <ModalHeader>
+          <h3>Recently Added Resources</h3>
+          <CloseButton onClick={onClose}>
+            <FaTimes />
+          </CloseButton>
+        </ModalHeader>
+        <ModalBody>
+          {resources.length === 0 ? (
+            <NoResources>No recent resources found.</NoResources>
+          ) : (
+            <ResourceList>
+              {resources.map((resource, index) => (
+                <ResourceItem key={index}>
+                  <ResourceTitle>{resource.title}</ResourceTitle>
+                  <ResourceMeta>
+                    {resource.context && (
+                      <span>{renderContext(resource.context)}</span>
+                    )}
+                    {resource.createdAt && (
+                      <span>• Added {new Date(resource.createdAt).toLocaleDateString()}</span>
+                    )}
+                  </ResourceMeta>
+                  <ResourceActions>
+                    <ViewButton onClick={() => openResource(resource)}>
+                      <FaExternalLinkAlt size={12} /> View
+                    </ViewButton>
+                    {resource.context && (
+                      <GoToSectionButton onClick={() => goToSection(resource.context)}>
+                        <FaFolderOpen size={12} /> Go to Section
+                      </GoToSectionButton>
+                    )}
+                  </ResourceActions>
+                </ResourceItem>
+              ))}
+            </ResourceList>
+          )}
+        </ModalBody>
+      </ModalContent>
+    </ModalOverlay>
+  );
+
   return (
     <PageBackground>
+      {showRecentModal && (
+        <RecentResourcesModal 
+          resources={recentResources} 
+          onClose={() => setShowRecentModal(false)} 
+        />
+      )}
       <Container>
         <Title>Select Your Education Level</Title>
 
@@ -486,33 +732,33 @@ const EducationLevelPage = () => {
       </SearchContainer>
       
       <ContainerWrapper>
-        <LevelsGrid>
-        {educationLevels.map((level) => (
-          <LevelCard 
-            key={level.id}
-            onClick={() => handleLevelSelect(level)}
-            aria-label={`Select ${level.title}`}
-          >
-            {level.image ? (
-              <ImageContainer>
-                <img src={level.image} alt={level.title} />
-              </ImageContainer>
-            ) : (
-              <IconContainer>
-                {level.icon}
-              </IconContainer>
-            )}
-            <Content>
-              <LevelTitle>{level.title}</LevelTitle>
-              <LevelDescription>{level.description}</LevelDescription>
-            </Content>
-          </LevelCard>
-        ))}
-      </LevelsGrid>
+          <LevelsGrid>
+            {educationLevels.map((level) => (
+              <LevelCard 
+                key={level.id}
+                isNew={level.isNew}
+                onClick={() => handleLevelSelect(level)}
+                style={level.isNew ? { backgroundColor: '#f7f7f7', boxShadow: '0 0 10px rgba(0,0,0,0.1)' } : {}}
+              >
+                {level.isNew && <NewBadge>New</NewBadge>}
+                <ImageContainer>
+                  <img 
+                    src={level.isNew ? '/tl-logo.png' : level.image} 
+                    alt={level.title} 
+                    style={level.isNew ? { width: '60%', height: '60%', objectFit: 'contain' } : {}}
+                  />
+                </ImageContainer>
+                <Content>
+                  <IconContainer>{level.icon}</IconContainer>
+                  <LevelTitle>{level.title}</LevelTitle>
+                  <LevelDescription>{level.description}</LevelDescription>
+                </Content>
+              </LevelCard>
+            ))}
+          </LevelsGrid>
       </ContainerWrapper>
       </Container>
     </PageBackground>
   );
 };
-
 export default EducationLevelPage;
