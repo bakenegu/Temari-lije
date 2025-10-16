@@ -188,9 +188,12 @@ const PageBackground = styled('div')({
 // Search UI styles
 const SearchContainer = styled('div')({
   width: '100%',
-  maxWidth: '900px',
-  margin: '0 auto 1.5rem auto',
-  position: 'relative'
+  maxWidth: '380px',
+  position: 'relative',
+  flexShrink: 1,
+  '@media (max-width: 968px)': {
+    maxWidth: '90%'
+  }
 });
 
 const SearchInputWrapper = styled('div')({
@@ -220,7 +223,11 @@ const ResultsPanel = styled('div')({
   border: '1px solid #e2e8f0',
   boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
   marginTop: '0.75rem',
-  overflow: 'hidden'
+  marginBottom: '1.5rem',
+  overflow: 'hidden',
+  width: '100%',
+  maxWidth: '900px',
+  margin: '0 auto'
 });
 
 const ResultRow = styled('div')({
@@ -286,21 +293,35 @@ const SecondaryButton = styled('button')({
 const Container = styled('div')({
   maxWidth: '1400px',
   margin: '0 auto',
-  padding: '2rem 1rem',
+  padding: '12rem 1rem 4rem 1rem',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   position: 'relative',
   zIndex: 1,
   '@media (max-width: 768px)': {
-    padding: '1rem'
+    padding: '8rem 1rem 2rem 1rem'
+  }
+});
+
+const HeaderRow = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '2rem',
+  width: '100%',
+  marginBottom: '1.5rem',
+  flexWrap: 'wrap',
+  '@media (max-width: 968px)': {
+    flexDirection: 'column',
+    gap: '1rem'
   }
 });
 
 const Title = styled('h1')({
   color: '#1a365d',
-  fontSize: '3rem',
-  marginBottom: '1.5rem',
+  fontSize: '2rem',
+  margin: 0,
   textAlign: 'center',
   textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
   fontWeight: 700,
@@ -308,21 +329,13 @@ const Title = styled('h1')({
   background: 'linear-gradient(45deg, #1a365d, #3182ce)',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  position: 'relative',
-  paddingBottom: '1rem',
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '120px',
-    height: '4px',
-    background: 'linear-gradient(90deg, #3182ce, #63b3ed)',
-    borderRadius: '2px'
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+  '@media (max-width: 968px)': {
+    fontSize: '1.8rem'
   },
-  '@media (max-width: 768px)': {
-    fontSize: '2.2rem'
+  '@media (max-width: 480px)': {
+    fontSize: '1.5rem'
   }
 });
 
@@ -344,19 +357,19 @@ const Subtitle = styled('p')({
 
 const LevelsGrid = styled('div')({
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-  gap: '1.5rem',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+  gap: '1rem',
   width: '100%',
-  padding: '1.5rem',
+  padding: '1rem',
   justifyContent: 'center',
   '@media (max-width: 768px)': {
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '1rem',
-    padding: '1rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: '0.75rem',
+    padding: '0.75rem'
   },
   '@media (max-width: 480px)': {
     gridTemplateColumns: '1fr',
-    padding: '0.75rem'
+    padding: '0.5rem'
   }
 });
 
@@ -368,9 +381,9 @@ const ContainerWrapper = styled('div')({
 
 const LevelCard = styled('div')(({ isNew }) => ({
   background: isNew ? 'linear-gradient(135deg, rgba(255, 250, 230, 0.95), rgba(255, 245, 215, 0.95))' : 'rgba(255, 255, 255, 0.9)',
-  borderRadius: '15px',
+  borderRadius: '12px',
   overflow: 'hidden',
-  boxShadow: isNew ? '0 8px 20px rgba(247, 196, 66, 0.25)' : '0 8px 20px rgba(0, 0, 0, 0.15)',
+  boxShadow: isNew ? '0 4px 12px rgba(247, 196, 66, 0.25)' : '0 4px 12px rgba(0, 0, 0, 0.15)',
   cursor: 'pointer',
   transition: 'all 0.3s ease',
   display: 'flex',
@@ -380,8 +393,8 @@ const LevelCard = styled('div')(({ isNew }) => ({
   border: isNew ? '1px solid #f7c542' : '1px solid rgba(255, 255, 255, 0.3)',
   position: 'relative',
   '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: isNew ? '0 15px 30px rgba(247, 196, 66, 0.35)' : '0 15px 30px rgba(0, 0, 0, 0.2)',
+    transform: 'translateY(-4px) scale(1.01)',
+    boxShadow: isNew ? '0 8px 20px rgba(247, 196, 66, 0.35)' : '0 8px 20px rgba(0, 0, 0, 0.2)',
     background: isNew 
       ? 'linear-gradient(135deg, rgba(255, 248, 230, 0.98), rgba(255, 238, 200, 0.95))' 
       : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.95))',
@@ -407,13 +420,13 @@ const NewBadge = styled('div')({
 const ImageContainer = styled('div')({
   position: 'relative',
   width: '100%',
-  height: '220px',
+  height: '140px',
   overflow: 'hidden',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   background: 'linear-gradient(135deg, #f7fafc, #edf2f7)',
-  padding: '1.5rem',
+  padding: '1rem',
   transition: 'all 0.3s ease',
   '& img': {
     maxWidth: '100%',
@@ -422,7 +435,7 @@ const ImageContainer = styled('div')({
     height: 'auto',
     objectFit: 'contain',
     objectPosition: 'center',
-    borderRadius: '8px',
+    borderRadius: '6px',
     transition: 'transform 0.3s ease, filter 0.3s ease',
     filter: 'grayscale(20%) contrast(110%)'
   },
@@ -431,40 +444,40 @@ const ImageContainer = styled('div')({
     filter: 'grayscale(0%) contrast(120%)'
   },
   '@media (max-width: 768px)': {
-    height: '180px',
-    padding: '1rem'
+    height: '120px',
+    padding: '0.75rem'
   },
   '@media (max-width: 480px)': {
-    height: '160px'
+    height: '100px'
   }
 });
 
 const Content = styled('div')({
-  padding: '1.8rem',
+  padding: '1rem',
   textAlign: 'center',
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  minHeight: '120px' // Ensure minimum height for content
+  minHeight: '80px'
 });
 
 const IconContainer = styled('div')({
-  fontSize: '2rem',
+  fontSize: '1.5rem',
   color: '#4299e1',
-  marginBottom: '0.5rem'
+  marginBottom: '0.4rem'
 });
 
 const LevelTitle = styled('h2')({
   color: '#2d3748',
-  fontSize: '1.5rem',
-  margin: '0 0 0.5rem 0'
+  fontSize: '1.1rem',
+  margin: '0 0 0.3rem 0'
 });
 
 const LevelDescription = styled('p')({
   color: '#718096',
   margin: 0,
-  fontSize: '1rem'
+  fontSize: '0.85rem'
 });
 
 const EducationLevelPage = () => {
@@ -682,10 +695,9 @@ const EducationLevelPage = () => {
         />
       )}
       <Container>
-        <Title>Select Your Education Level</Title>
-
-      {/* Search resources */}
-      <SearchContainer>
+        <HeaderRow>
+          <Title>Select Your Education Level</Title>
+          <SearchContainer>
         <SearchInputWrapper>
           <FaSearch color="#718096" />
           <SearchInput
@@ -694,6 +706,9 @@ const EducationLevelPage = () => {
             onChange={(e) => setQ(e.target.value)}
           />
         </SearchInputWrapper>
+          </SearchContainer>
+        </HeaderRow>
+
         {(q.trim().length >= 2) && (
           <ResultsPanel>
             {loading && (
@@ -729,7 +744,6 @@ const EducationLevelPage = () => {
             ))}
           </ResultsPanel>
         )}
-      </SearchContainer>
       
       <ContainerWrapper>
           <LevelsGrid>

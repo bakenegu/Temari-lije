@@ -466,8 +466,10 @@ const ResourceList = ({ isExam = false }) => {
             </tr>
           </thead>
           <tbody>
-            {resources.map((resource) => (
-              <tr key={resource.id}>
+            {resources.map((resource, index) => {
+              const stableKey = resource?.id ?? resource?.uuid ?? `${resource?.title || 'resource'}-${index}`;
+              return (
+              <tr key={stableKey}>
                 {user?.role === 'admin' && (
                   <td style={{ textAlign: 'center' }}>
                     <ActionButton 
@@ -551,7 +553,8 @@ const ResourceList = ({ isExam = false }) => {
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </ResourceTable>
       ) : (

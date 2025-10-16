@@ -135,8 +135,8 @@ const ExamsPage = () => {
         </BackButton>
         <Title>Select Your Exam</Title>
         <Subtitle>
-          SAT: A U.S. college admissions exam that measures math, reading, and writing skills. 
-          GRE: A graduate admissions exam that evaluates verbal reasoning, quantitative reasoning, and analytical writing.
+          SAT: A U.S. college admissions exam administered by the College Board that measures math, reading, and writing skills. 
+          GRE: A graduate admissions exam delivered by ETS that evaluates verbal reasoning, quantitative reasoning, and analytical writing for advanced study.
         </Subtitle>
       </Header>
       

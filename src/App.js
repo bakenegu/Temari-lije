@@ -14,6 +14,8 @@ import LoginPage from './pages/LoginPage';
 import AdminAddResource from './pages/admin/AdminAddResource';
 import ExamInfoPage from './pages/ExamInfoPage';
 import VideoPlayerPage from './pages/VideoPlayerPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import styled from '@emotion/styled';
 import './App.css';
@@ -44,6 +46,8 @@ const AppContent = () => {
           <Route path="/exams" element={<ExamsPage />} />
           <Route path="/resource-categories/:examId" element={<ResourceCategoriesPage />} />
           <Route path="/exams/:examId/info" element={<ExamInfoPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/levels/:levelId/grades" element={<LandingPage />} />
           <Route path="/admin" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
           
