@@ -16,6 +16,8 @@ import ExamInfoPage from './pages/ExamInfoPage';
 import VideoPlayerPage from './pages/VideoPlayerPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import AdditionalResourcesPage from './pages/AdditionalResourcesPage';
+import ComingSoonPage from './pages/ComingSoonPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import styled from '@emotion/styled';
 import './App.css';
@@ -36,7 +38,7 @@ const MainContent = styled.main`
 
 const AppContent = () => {
   const { user } = useAuth();
-  
+
   return (
     <AppContainer>
       <Header />
@@ -48,28 +50,30 @@ const AppContent = () => {
           <Route path="/exams/:examId/info" element={<ExamInfoPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/additional-resources" element={<AdditionalResourcesPage />} />
+          <Route path="/coming-soon" element={<ComingSoonPage />} />
           <Route path="/levels/:levelId/grades" element={<LandingPage />} />
           <Route path="/admin" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-          
+
           {/* Updated routes to include levelId */}
           <Route path="/students/:levelId/:grade" element={<StudentSelection />} />
           <Route path="/content/:levelId/:grade/:subject" element={<ContentPage />} />
-          <Route 
-            path="/content/:levelId/:grade/:subject/:resourceType" 
-            element={<ResourceList />} 
+          <Route
+            path="/content/:levelId/:grade/:subject/:resourceType"
+            element={<ResourceList />}
           />
           {/* New route for exam resources */}
-          <Route 
+          <Route
             path="/content/exams/:examId/:resourceType"
             element={<ResourceList isExam={true} />}
           />
           {/* Embedded YouTube player route */}
-          <Route 
-            path="/watch/youtube/:videoId" 
-            element={<VideoPlayerPage />} 
+          <Route
+            path="/watch/youtube/:videoId"
+            element={<VideoPlayerPage />}
           />
           {/* Admin manage page for exam resources */}
-          <Route 
+          <Route
             path="/admin/add-resource/exams/:examId/:resourceType"
             element={
               <ProtectedRoute>
@@ -77,13 +81,13 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
-          <Route 
-            path="/admin/add-resource/:levelId/:grade/:subject/:resourceType" 
+          <Route
+            path="/admin/add-resource/:levelId/:grade/:subject/:resourceType"
             element={
               <ProtectedRoute>
                 <AdminAddResource />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

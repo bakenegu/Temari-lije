@@ -174,7 +174,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = React.useRef(null);
-  
+
   // Close dropdown when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event) => {
@@ -182,13 +182,13 @@ const Header = () => {
         setShowDropdown(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -199,21 +199,21 @@ const Header = () => {
       <HeaderContent>
         <Logo to="/">
           <LogoImage src={`${process.env.PUBLIC_URL}/tl-logo.png`} alt="Logo" />
-          <LogoText>Temari Lije Learning Platform</LogoText>
+          <LogoText>ተማሪ ልጄ የትምህርት ማዕከል</LogoText>
         </Logo>
         <Navigation>
           <Link to="/">Home</Link>
           <Link to="/about">About</Link>
           <Link to="/contact">Contact</Link>
         </Navigation>
-        
+
         {user ? (
           <UserMenu ref={dropdownRef}>
             <UserButton onClick={() => setShowDropdown(!showDropdown)}>
               <FaUser />
               {user.username}
             </UserButton>
-            
+
             {showDropdown && (
               <DropdownMenu>
                 <DropdownItem to="/profile" key="profile">

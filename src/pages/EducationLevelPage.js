@@ -163,7 +163,7 @@ const PageBackground = styled('div')({
   padding: 0,
   position: 'relative',
   overflow: 'hidden',
-  background: 'url("/ethbackground.png") no-repeat center center',
+  background: 'url("/Hero-background-Section.png") no-repeat center center',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   '&::before': {
@@ -379,7 +379,7 @@ const ContainerWrapper = styled('div')({
   margin: '0 auto'
 });
 
-const LevelCard = styled('div')(({ isNew }) => ({
+const LevelCard = styled('div')(({ isNew, isComingSoon }) => ({
   background: isNew ? 'linear-gradient(135deg, rgba(255, 250, 230, 0.95), rgba(255, 245, 215, 0.95))' : 'rgba(255, 255, 255, 0.9)',
   borderRadius: '12px',
   overflow: 'hidden',
@@ -392,13 +392,16 @@ const LevelCard = styled('div')(({ isNew }) => ({
   backdropFilter: 'blur(5px)',
   border: isNew ? '1px solid #f7c542' : '1px solid rgba(255, 255, 255, 0.3)',
   position: 'relative',
+  opacity: isComingSoon ? 0.6 : 1,
+  transform: isComingSoon ? 'scale(0.85)' : 'scale(1)',
   '&:hover': {
-    transform: 'translateY(-4px) scale(1.01)',
+    transform: isComingSoon ? 'scale(0.88)' : 'translateY(-4px) scale(1.01)',
     boxShadow: isNew ? '0 8px 20px rgba(247, 196, 66, 0.35)' : '0 8px 20px rgba(0, 0, 0, 0.2)',
-    background: isNew 
-      ? 'linear-gradient(135deg, rgba(255, 248, 230, 0.98), rgba(255, 238, 200, 0.95))' 
+    background: isNew
+      ? 'linear-gradient(135deg, rgba(255, 248, 230, 0.98), rgba(255, 238, 200, 0.95))'
       : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.95))',
-    borderColor: isNew ? '#f7c542' : '#63b3ed'
+    borderColor: isNew ? '#f7c542' : '#63b3ed',
+    opacity: isComingSoon ? 0.7 : 1
   }
 }));
 
@@ -534,7 +537,9 @@ const EducationLevelPage = () => {
       image: imagePaths.elementary,
       icon: <FaSchool />,
       grades: Array.from({ length: 6 }, (_, i) => i + 1), // Grades 1-6
-      isExam: false
+      isExam: false,
+      isComingSoon: true,
+      onClick: () => navigate('/coming-soon')
     },
     {
       id: 'middle',
@@ -543,7 +548,9 @@ const EducationLevelPage = () => {
       image: imagePaths.middle,
       icon: <FaChalkboardTeacher />,
       grades: [7, 8],
-      isExam: false
+      isExam: false,
+      isComingSoon: true,
+      onClick: () => navigate('/coming-soon')
     },
     {
       id: 'high',
@@ -561,7 +568,9 @@ const EducationLevelPage = () => {
       image: imagePaths.college,
       icon: <FaGraduationCap />,
       grades: ['freshman', 'sophomore', 'junior', 'senior'],
-      isExam: false
+      isExam: false,
+      isComingSoon: true,
+      onClick: () => navigate('/coming-soon')
     },
     {
       id: 'exams',
@@ -573,13 +582,12 @@ const EducationLevelPage = () => {
     },
     {
       id: 'upcoming',
-      title: 'New & Upcoming',
-      description: 'Freshly added resources and upcoming content',
+      title: 'Additional Online Resource',
+      description: 'Khan Academy and Fetena.net',
       image: imagePaths.elementary,
       icon: <FaClock />,
-      isNew: true,
       isExam: false,
-      onClick: () => setShowRecentModal(true)
+      onClick: () => navigate('/additional-resources')
     }
   ];
 
@@ -593,7 +601,7 @@ const EducationLevelPage = () => {
         console.error('Error loading recent resources:', error);
       }
     };
-    
+
     loadRecentResources();
   }, []);
 
@@ -602,7 +610,7 @@ const EducationLevelPage = () => {
       level.onClick();
       return;
     }
-    
+
     if (level.id === 'exams') {
       // Navigate to the exams selection page
       navigate('/exams');
@@ -689,23 +697,23 @@ const EducationLevelPage = () => {
   return (
     <PageBackground>
       {showRecentModal && (
-        <RecentResourcesModal 
-          resources={recentResources} 
-          onClose={() => setShowRecentModal(false)} 
+        <RecentResourcesModal
+          resources={recentResources}
+          onClose={() => setShowRecentModal(false)}
         />
       )}
       <Container>
         <HeaderRow>
           <Title>Select Your Education Level</Title>
           <SearchContainer>
-        <SearchInputWrapper>
-          <FaSearch color="#718096" />
-          <SearchInput
-            value={q}
-            placeholder="Search resources (min 2 characters)..."
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </SearchInputWrapper>
+            <SearchInputWrapper>
+              <FaSearch color="#718096" />
+              <SearchInput
+                value={q}
+                placeholder="Search resources (min 2 characters)..."
+                onChange={(e) => setQ(e.target.value)}
+              />
+            </SearchInputWrapper>
           </SearchContainer>
         </HeaderRow>
 
@@ -744,21 +752,22 @@ const EducationLevelPage = () => {
             ))}
           </ResultsPanel>
         )}
-      
-      <ContainerWrapper>
+
+        <ContainerWrapper>
           <LevelsGrid>
             {educationLevels.map((level) => (
-              <LevelCard 
+              <LevelCard
                 key={level.id}
                 isNew={level.isNew}
+                isComingSoon={level.isComingSoon}
                 onClick={() => handleLevelSelect(level)}
                 style={level.isNew ? { backgroundColor: '#f7f7f7', boxShadow: '0 0 10px rgba(0,0,0,0.1)' } : {}}
               >
                 {level.isNew && <NewBadge>New</NewBadge>}
                 <ImageContainer>
-                  <img 
-                    src={level.isNew ? '/tl-logo.png' : level.image} 
-                    alt={level.title} 
+                  <img
+                    src={level.isNew ? '/tl-logo.png' : level.image}
+                    alt={level.title}
                     style={level.isNew ? { width: '60%', height: '60%', objectFit: 'contain' } : {}}
                   />
                 </ImageContainer>
@@ -770,7 +779,7 @@ const EducationLevelPage = () => {
               </LevelCard>
             ))}
           </LevelsGrid>
-      </ContainerWrapper>
+        </ContainerWrapper>
       </Container>
     </PageBackground>
   );

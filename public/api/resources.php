@@ -93,7 +93,7 @@ $params = array_merge($_GET, $body);
 
 // For 'search' we do not require a composite key; otherwise we do.
 $key = null;
-if ($action !== 'search') {
+if ($action !== 'search' && $action !== 'recent') {
   $key = get_key_from_params($params);
   if ($key === '') {
     http_response_code(400);
@@ -157,6 +157,53 @@ switch ($action) {
     }
     echo json_encode(['ok' => true, 'resources' => $results]);
     break;
+  case 'recent':
+    $limit = isset($params['limit']) ? intval($params['limit']) : 5;
+    if ($limit < 1) { $limit = 5; }
+    $data = read_json_file($dataFile);
+    $all = [];
+    foreach ($data as $k => $arr) {
+      if (!is_array($arr)) continue;
+      // Parse context from key
+      $ctx = [];
+      if (strpos($k, 'exam_resources_') === 0) {
+        $parts = explode('_', substr($k, strlen('exam_resources_')));
+        $examId = isset($parts[0]) ? $parts[0] : '';
+        $resourceType = isset($parts[1]) ? $parts[1] : '';
+        $ctx = [ 'isExam' => true, 'examId' => $examId, 'resourceType' => $resourceType ];
+      } elseif (strpos($k, 'resources_') === 0) {
+        $parts = explode('_', substr($k, strlen('resources_')));
+        $levelId = isset($parts[0]) ? $parts[0] : '';
+        $grade = isset($parts[1]) ? $parts[1] : '';
+        $subject = isset($parts[2]) ? $parts[2] : '';
+        $resourceType = isset($parts[3]) ? $parts[3] : '';
+        $ctx = [ 'isExam' => false, 'levelId' => $levelId, 'grade' => $grade, 'subject' => $subject, 'resourceType' => $resourceType ];
+      } else {
+        continue;
+      }
+      foreach ($arr as $r) {
+        if (!is_array($r)) continue;
+        $title = isset($r['title']) ? (string)$r['title'] : '';
+        $url = isset($r['url']) ? (string)$r['url'] : '';
+        if ($title === '' && $url === '') continue;
+        $createdAt = isset($r['createdAt']) ? (string)$r['createdAt'] : gmdate('c', @filemtime($dataFile) ?: time());
+        $all[] = [
+          'id' => isset($r['id']) ? (string)$r['id'] : '',
+          'title' => $title,
+          'url' => $url,
+          'createdAt' => $createdAt,
+          'context' => $ctx,
+        ];
+      }
+    }
+    usort($all, function($a, $b) {
+      $ta = isset($a['createdAt']) ? strtotime($a['createdAt']) : 0;
+      $tb = isset($b['createdAt']) ? strtotime($b['createdAt']) : 0;
+      return $tb <=> $ta;
+    });
+    $all = array_slice($all, 0, $limit);
+    echo json_encode(['ok' => true, 'resources' => $all]);
+    break;
   case 'list':
     echo json_encode(['ok' => true, 'resources' => $data[$key]]);
     break;
@@ -177,7 +224,7 @@ switch ($action) {
       echo json_encode(['ok' => false, 'error' => 'Invalid resources payload']);
       break;
     }
-    // Normalize items: ensure id/title/url
+    // Normalize items: ensure id/title/url and preserve createdAt
     $norm = [];
     foreach ($resources as $r) {
       if (!is_array($r)) continue;
@@ -186,7 +233,8 @@ switch ($action) {
       $url = isset($r['url']) ? trim((string)$r['url']) : '';
       if ($title === '' || $url === '') continue;
       if ($id === '') { $id = uniqid('res_', true); }
-      $norm[] = [ 'id' => $id, 'title' => $title, 'url' => $url ];
+      $createdAt = isset($r['createdAt']) ? (string)$r['createdAt'] : gmdate('c');
+      $norm[] = [ 'id' => $id, 'title' => $title, 'url' => $url, 'createdAt' => $createdAt ];
     }
     $data[$key] = $norm;
     if (!write_json_file($dataFile, $data)) {
